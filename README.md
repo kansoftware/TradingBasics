@@ -1,7 +1,7 @@
-# TradingBasics
+# Trading Basics library
 ## About
 Это общая для нескольких моих проектов библиотека включающая в себя типы, классы
-и функции облегчающая работу с C++ при создании торговых стратигий и роботов.
+и функции облегчающая работу с C++ при создании торговых стратегий и роботов.
 
 ## Depends
 git cmake gcc g++
@@ -13,7 +13,7 @@ cd TradingBasics
 mkdir build
 cd build
 cmake -DCMAKE_C_FLAGS="-O3 -march=native -DNDEBUG" -DCMAKE_CXX_FLAGS="-O3 -march=native -DNDEBUG" ..
-cmake --build . -- -j 4 VERBOSE=1
+cmake --build . -- -j 4
 ```
 
 ## Usage
