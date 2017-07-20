@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+
+# NetBeans IDE Files
+nbproject/*

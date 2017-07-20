@@ -17,4 +17,4 @@ cmake --build . -- -j 4 VERBOSE=1
 ```
 
 ## Usage
-Into your project include folder TradingBasics/include. Add lib to your project.
+Into your project include folder TradingBasics/include. Add builded lib to your project.
