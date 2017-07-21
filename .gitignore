@@ -33,3 +33,5 @@
 
 # NetBeans IDE Files
 nbproject/*
+/gtests/build/
+/buildR/

@@ -41,7 +41,7 @@ bool IsOneHour( const TInnerDate aLeft, const TInnerDate aRight, const double aD
 
 //------------------------------------------------------------------------------------------
 bool IsValidBar( const TSimpleBar & aBar ) {
-    return ( aBar.Volume >= 0 )
+    return IsGreat( aBar.Volume, -gAbsoluteZero )
            and IsValidPrice( aBar.Open )
            and IsValidPrice( aBar.High )
            and IsValidPrice( aBar.Low )
@@ -113,7 +113,7 @@ void Reset( TSimpleBar &aBar ) {
     aBar.High = 0.0;
     aBar.Low = 0.0;
     aBar.Close = 0.0;
-    aBar.Volume = 0.0;
+    aBar.Volume = -1.0;
 }
 
 //------------------------------------------------------------------------------------------
@@ -158,13 +158,22 @@ TBarSeries _CreateBars( const TBarSeries & aBars, const TBarPeriod aBarPeriod ) 
 
 //------------------------------------------------------------------------------------------
 TSimpleBar operator+( const TSimpleBar &aStarBar, const TSimpleBar &aEndBar ) {
-    const double lOpen = isZero( aStarBar.Open ) ? aEndBar.Open : aStarBar.Open;
+    
+    if( not IsValidBar( aEndBar ) ) {
+        return aStarBar;
+    }
+    
+    if( not IsValidBar( aStarBar ) ) {
+        return aEndBar;
+    }
+    
+    const double lOpen =  aStarBar.Open;
     const double lHigh = IsGreat( aStarBar.High, aEndBar.High ) ? aStarBar.High : aEndBar.High ;
-    const double lLow = ( IsLess( aStarBar.Low, aEndBar.Low ) and not isZero( aStarBar.Low ) ) ? aStarBar.Low : aEndBar.Low;
+    const double lLow = IsLess( aStarBar.Low, aEndBar.Low ) ? aStarBar.Low : aEndBar.Low;
     const double lClose = aEndBar.Close;
     const double lVolume = aStarBar.Volume + aEndBar.Volume;
 
-    TSimpleBar lOutBar{ aStarBar.DateTime, lOpen, lHigh, lLow, lClose, lVolume };
+    const TSimpleBar lOutBar{ aStarBar.DateTime, lOpen, lHigh, lLow, lClose, lVolume };
 
     return lOutBar;
 }
@@ -200,11 +209,26 @@ std::ostream& operator<<( std::ostream &out, const TSimpleTick &aTick ) {
             << aTick.Volume ;
     return out << strm.str();     
 }
+
 //------------------------------------------------------------------------------------------
 TPrice RoundTo( const TPrice aPrice, const TPrice aPriceStep ) {
     assert( isPositiveValue( aPriceStep ) );
     
     return std::round( aPrice / aPriceStep ) * aPriceStep ;
+}
+
+//------------------------------------------------------------------------------------------
+TPrice TruncTo( const TPrice aPrice, const TPrice aPriceStep ) {
+    assert( isPositiveValue( aPriceStep ) );
+    
+    return std::trunc( aPrice / aPriceStep ) * aPriceStep ;
+}
+
+//------------------------------------------------------------------------------------------
+TPrice CeilTo( const TPrice aPrice, const TPrice aPriceStep ) {
+    assert( isPositiveValue( aPriceStep ) );
+    
+    return std::ceil( aPrice / aPriceStep ) * aPriceStep ;
 }
 
 //------------------------------------------------------------------------------------------

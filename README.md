@@ -1,7 +1,7 @@
 # Trading Basics library
+
 ## About
-Это общая для нескольких моих проектов библиотека включающая в себя типы, классы
-и функции облегчающая работу с C++ при создании торговых стратегий и роботов.
+This is classes, types and functions for creating trading strategies and bots with C++ compilers.
 
 ## Depends
 git cmake gcc g++
@@ -10,11 +10,32 @@ git cmake gcc g++
 ```bash
 git clone https://github.com/kansoftware/TradingBasics.git
 cd TradingBasics
-mkdir build
-cd build
+mkdir build; cd build
 cmake -DCMAKE_C_FLAGS="-O3 -march=native -DNDEBUG" -DCMAKE_CXX_FLAGS="-O3 -march=native -DNDEBUG" ..
 cmake --build . -- -j 4
+make test
 ```
 
 ## Usage
 Into your project include folder TradingBasics/include. Add builded lib to your project.
+The sample for cmake:
+```cmake
+set( TRADING_BASICS_PATH "#YOUR_PATH_TO#/TradingBasics/" )
+
+add_library(TRADING_BASICS SHARED IMPORTED)
+set_target_properties(TRADING_BASICS PROPERTIES
+    IMPORTED_LOCATION "${TRADING_BASICS_PATH}build/libTradingBasics.a"
+    INTERFACE_INCLUDE_DIRECTORIES "${TRADING_BASICS_PATH}include"
+)
+
+target_link_libraries( #YOUR_TARGET_PROJECT# TRADING_BASICS )
+
+```
+or
+```cmake
+set( TRADING_BASICS_PATH "$ENV{HOME}/cpp/companents/TradingBasics/" )
+include_directories( "${TRADING_BASICS_PATH}include" )
+link_directories( "${TRADING_BASICS_PATH}build" )
+
+target_link_libraries( #YOUR_TARGET_PROJECT# -lTradingBasics )
+```

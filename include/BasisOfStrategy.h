@@ -3,7 +3,7 @@
  * \brief Модуль реализующий объекты для одно-ногих стратегий
  * \author Андрей Карбанов <kan@kansoftware.ru>
  * \since 2015-11-11
- * \date 2017-04-19
+ * \date 2017-07-21
  * Модуль используется неизменно в проектах TradeBot и [R] BackTester
  */
 
@@ -75,5 +75,7 @@
     std::ostream& operator<<( std::ostream &out, const TSimpleTick &aTick );
     
     TPrice RoundTo( const TPrice aPrice, const TPrice aPriceStep );
+    TPrice TruncTo( const TPrice aPrice, const TPrice aPriceStep );
+    TPrice CeilTo( const TPrice aPrice, const TPrice aPriceStep );
 
 #endif //BACKTESTER_BASISOFSTRATEGY_H

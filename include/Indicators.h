@@ -3,7 +3,7 @@
  * \brief Модуль реализующий индикаторы для одноногих стратегий
  * \author Андрей Карбанов <kan@kansoftware.ru>
  * \since 2015-11-10
- * \date 2017-04-03
+ * \date 2017-07-21
  * Модуль используется неизменно в проектах TradeBot и [R] BackTester
  */
 
@@ -32,6 +32,7 @@
     
     const size_t gSARStabilizationDelay = 200 ;
     TPriceSeries _ParabolicSar( const TBarSeries & aBars, const double aAf, const double aMaxAf );
+    TPriceSeries _IntradayParabolicSar( const TBarSeries & aBars, const double aAf, const double aMaxAf );
     TPriceSeries _MACD( const TPriceSeries & aPrices, const int aFastPeriod, const int aSlowPeriod, const int aSmoothPeriod );
     TPriceSeries _ZigZag( const TBarSeries & aBars, const double aGap );
     

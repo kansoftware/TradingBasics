@@ -654,3 +654,113 @@ TPriceSeries _KAMA( const TPriceSeries & aPrices, const int aPeriod, const doubl
 }
 
 //------------------------------------------------------------------------------------------
+TPriceSeries _IntradayParabolicSar( const TBarSeries & aBars, const double aAf, const double aMaxAf ) {
+
+    TPriceSeries lResult( aBars.size() );
+
+    if( aBars.empty() ) {
+        return lResult;
+    }
+
+    TDealSide lCurrentSide = TDealSide::Buy;
+    const double lInitaAfValue = aAf;
+    double lAf = lInitaAfValue;
+
+    const TSimpleBar lFirstBar( *aBars.begin() );
+
+    TSimpleTick lTick{
+        lFirstBar.DateTime,
+        lFirstBar.Low,
+        1.0 
+    };
+    lResult[ 0 ] = lTick;
+
+    double lSar = lFirstBar.Low;
+    double lFuturesSar = lFirstBar.High;
+    
+    for( size_t i = 1; i < aBars.size(); ++i ) {
+        const TSimpleBar lCurrentBar( aBars[ i ] );
+        const TPrice lHigh = lCurrentBar.High;
+        const TPrice lLow = lCurrentBar.Low;
+        const double lPriorSar = lSar;
+        
+        lSar = (lFuturesSar - lPriorSar) * lAf + lPriorSar;
+        
+        if( not IsOneDay( aBars[ i - 1 ].DateTime, aBars[ i ].DateTime ) ){
+            lCurrentSide = TDealSide::Buy;
+            lSar = aBars[ i ].Low;
+            lFuturesSar = aBars[ i ].High;
+            lAf = lInitaAfValue;
+            TSimpleTick lTick{
+                aBars[ i ].DateTime,
+                aBars[ i ].Low,
+                1.0 
+            };
+            lResult[ i ] = lTick;
+            continue;
+        }
+        
+        if( lCurrentSide == TDealSide::Buy ) {
+
+            if( IsGreat( lHigh, lFuturesSar ) ) {
+                lFuturesSar = lHigh;
+                if( IsLess(lAf, aMaxAf) ) {
+                    lAf += aAf;
+                }
+            }
+                
+            const TPrice lPriorLow = aBars[ i - 1 ].Low;
+            const TPrice lLocalLow = std::min( lLow, lPriorLow );
+            const double lCondidateSAR = std::min( lLocalLow, lSar );
+            lSar = std::max( lPriorSar, lCondidateSAR );
+            
+            if( IsLess( lLow , lSar ) ) {
+                lAf = lInitaAfValue;
+                lCurrentSide = TDealSide::Sell;
+                lSar = lFuturesSar;
+                lFuturesSar = lLow;
+            }
+                
+            TSimpleTick lTick{
+                lCurrentBar.DateTime,
+                lSar,
+                1.0
+            };
+            lResult[ i ] = lTick;
+            continue;
+        }
+
+        if( lCurrentSide == TDealSide::Sell ) {
+                
+            if( IsLess(lLow, lFuturesSar) ) {
+                lFuturesSar = lLow;
+                if( IsLess( lAf, aMaxAf) ) {
+                    lAf += aAf;
+                }
+            }
+
+            const TPrice lPriorHigh = aBars[ i - 1 ].High;
+            const TPrice lLocalHigh= std::max( lHigh, lPriorHigh );
+            const double lCondidateSAR = std::max( lLocalHigh, lSar );
+            lSar = std::min( lPriorSar, lCondidateSAR );
+            
+            if( IsGreat(lHigh, lSar) ) {
+                lAf = lInitaAfValue;
+                lCurrentSide = TDealSide::Buy;
+                lSar = lFuturesSar;
+                lFuturesSar = lHigh;
+            }
+
+            TSimpleTick lTick{
+                lCurrentBar.DateTime,
+                lSar,
+                1.0
+            };
+            lResult[ i ] = lTick;
+        }
+    }
+    
+    return lResult;
+}
+
+//------------------------------------------------------------------------------------------
