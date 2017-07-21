@@ -16,7 +16,12 @@
 
 #include "Forecasting.h"
 
-TForecastResult Forecast(const TDoubles &aData, TForecastModelParams & aioParams, const double aConfidenceIntervals) {
+//-----------------------------------------------------------------------------------
+TForecastResult Forecast(
+    const TDoubles &aData, 
+    TForecastModelParams & aioParams, 
+    const double aConfidenceIntervals ) {
+    
     const size_t NDat = aData.size();
 
     CIndicatorES Es;
@@ -71,3 +76,5 @@ TForecastResult Forecast(const TDoubles &aData, TForecastModelParams & aioParams
 
     return lResult;
 }
+
+//-----------------------------------------------------------------------------------

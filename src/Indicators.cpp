@@ -2,8 +2,8 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 /** 
- * File:   BarPeriod.cpp
- * Author: victorg(mq5), kan(c++)
+ * File:   Indicators.cpp
+ * Author: kan
  * 
  * Created on 10.11.2015
  * @lastupdate 2016.03.04
@@ -378,7 +378,11 @@ TPriceSeries _ParabolicSar( const TBarSeries & aBars, const double aAf, const do
 }
 
 //------------------------------------------------------------------------------------------
-TPriceSeries _MACD( const TPriceSeries & aPrices, const int aFastPeriod, const int aSlowPeriod, const int aSmoothPeriod ) {
+TPriceSeries _MACD( 
+    const TPriceSeries & aPrices, 
+    const int aFastPeriod, 
+    const int aSlowPeriod, 
+    const int aSmoothPeriod ) {
     
     if( aFastPeriod <= 0 or aSlowPeriod <= 0 or aSmoothPeriod<=0 ) {
         throw std::logic_error( "Period can be only positive!" );
@@ -476,10 +480,13 @@ TPriceSeries _ZigZag( const TBarSeries & aBars, const double aGap ) {
 }
 
 //------------------------------------------------------------------------------------------
-bool _Forecasting( const TPriceSeries & aPrices, const size_t aForecastPeriod, const double aConfidenceIntervals, 
-                        TPriceSeries & aoUpperBorder, 
-                        TPriceSeries & aoForecast, 
-                        TPriceSeries & aoLowerBorder ) {
+bool _Forecasting( 
+    const TPriceSeries & aPrices, 
+    const size_t aForecastPeriod, 
+    const double aConfidenceIntervals, 
+    TPriceSeries & aoUpperBorder, 
+    TPriceSeries & aoForecast, 
+    TPriceSeries & aoLowerBorder ) {
     
     const size_t lDataSize = aPrices.size();
     
@@ -601,7 +608,13 @@ bool _RollMinMax(
 }
 
 //------------------------------------------------------------------------------------------
-TPriceSeries _KAMA( const TPriceSeries & aPrices, const int aPeriod, const double aCoeff, const double aFastPeriod, const double aSlowPeriod, const size_t aLag ) {
+TPriceSeries _KAMA( 
+    const TPriceSeries & aPrices, 
+    const int aPeriod, 
+    const double aCoeff, 
+    const double aFastPeriod, 
+    const double aSlowPeriod, 
+    const size_t aLag ) {
   
     if( aPeriod <= 0 or aFastPeriod <= 0 or aSlowPeriod <= 0 ) {
         throw std::logic_error( "Period can be only positive!" );

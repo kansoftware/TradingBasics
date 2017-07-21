@@ -15,7 +15,6 @@
 //-----------------------------------------------------------------------------------
 // CalcPar
 //-----------------------------------------------------------------------------------
-
 double CIndicatorES::GetPar(const int n) {
     if (n >= 0 and n < 5) {
         return ( Par[ ToSize_t(n) ]);
@@ -24,6 +23,7 @@ double CIndicatorES::GetPar(const int n) {
     }
 }
 
+//-----------------------------------------------------------------------------------
 bool CIndicatorES::CalcPar(const TDoubles &dat, const TForecastModelParams &aParams) {
     Dlen = dat.size();
     Dat = dat;
@@ -40,7 +40,6 @@ bool CIndicatorES::CalcPar(const TDoubles &dat, const TForecastModelParams &aPar
 //------------------------------------------------------------------------------------
 // func
 //------------------------------------------------------------------------------------
-
 double CIndicatorES::func(const TDoubles &p) {
     double s, t, alp, gam, phi, k1, k2, k3, e, sse, ae, pt;
 
@@ -91,4 +90,5 @@ double CIndicatorES::func(const TDoubles &p) {
 
     return ( ToDouble(Dlen) * log(k1 * k2 * k3 * sse));
 }
+
 //--------------------------------------------------------------------------------

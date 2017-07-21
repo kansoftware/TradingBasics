@@ -102,12 +102,13 @@ void PowellsMethod::linmin() {
 
 //-----------------------------------------------------------------------------------
 void PowellsMethod::mnbrak(
-        double &ax,
-        double &bx,
-        double &cx,
-        double &fa,
-        double &fb,
-        double &fc) {
+    double &ax,
+    double &bx,
+    double &cx,
+    double &fa,
+    double &fb,
+    double &fc) {
+    
     double ulim, u, r, q, fu, dum;
 
     fa = f1dim(ax);

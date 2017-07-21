@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 /** 
- * File:   BarPeriod.cpp
+ * File:   PnlAction.cpp
  * Author: kan
  * 
  * Created on 2015.11.11
@@ -467,6 +467,7 @@ TDoubles ToDoublesArray( const TPriceSeries & aPriceSeries ) {
     
     return lResult;
 }
+
 //------------------------------------------------------------------------------------------
 TPriceSeries DealsToDaily( const TPriceSeries & aPnls ) {
     
@@ -501,6 +502,7 @@ TPriceSeries DealsToDaily( const TPriceSeries & aPnls ) {
     
     return lResult;
 }
+
 //------------------------------------------------------------------------------------------
 bool IsGrows( const TPriceSeries & aDailyPnls, const size_t aPeriod, const size_t aTollerance ) {
     if( aPeriod == 0 ){
