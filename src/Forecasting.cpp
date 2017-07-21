@@ -3,7 +3,7 @@
 
 /* 
  * File:   Forecasting.cpp
- * Author: wellington
+ * Author: victorg(mq5), kan(c++)
  * 
  * Created on January 23, 2017, 1:58 PM
  */
@@ -11,9 +11,10 @@
 #include <cmath>
 #include <cstddef>
 
-#include "Forecasting.h"
 #include "Prices.h"
 #include "DelphisRound.h"
+
+#include "Forecasting.h"
 
 TForecastResult Forecast(const TDoubles &aData, TForecastModelParams & aioParams, const double aConfidenceIntervals) {
     const size_t NDat = aData.size();

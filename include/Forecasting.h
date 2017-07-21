@@ -1,6 +1,6 @@
 /* 
  * File:   Forecasting.h
- * Author: wellington
+ * Author: kan <kansoftware.ru>
  *
  * Created on January 23, 2017, 1:58 PM
  */

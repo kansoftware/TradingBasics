@@ -1,7 +1,7 @@
 /**
  * \file Comparers.h
  * \brief Модуль содержащий методы для сравнения чисел с заданной точностью
- * \author Андрей Карбанов <kan@kansoftware.ru>
+ * \author kan <kansoftware.ru>
  * \since 2015-08-25
  * \date 2017-04-24
  */
@@ -57,4 +57,3 @@ template< typename TData > inline bool IsEqual( const TData A, const TData B ) {
 }
 
 #endif	/* COMPARERS_H */
-

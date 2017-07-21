@@ -1,9 +1,12 @@
 // This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-/**
- * @since 2015.11.11
- * @date 2016.03.25
+/** 
+ * File:   BarPeriod.cpp
+ * Author: kan
+ * 
+ * Created on 2015.11.11
+ * @lastupdate 2016.03.25
  */
 
 #include <map>
@@ -16,13 +19,14 @@
 
 #include "DelphisRound.h"
 #include "Comparers.h"
-#include "PnlAction.h"
 
 //#define FULLDATA
 #ifdef FULLDATA
     #include <iostream>
     #include "Indicators.h"
 #endif
+
+#include "PnlAction.h"
 
 //------------------------------------------------------------------------------------------
 TPriceSeries DealsToPnLs( const TDeals & aDeals ) {

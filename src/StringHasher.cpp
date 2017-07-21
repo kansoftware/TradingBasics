@@ -1,7 +1,6 @@
 #include "StringHasher.h"
 #include "DelphisRound.h"
 
-
 /**
  *  \var gSymbols
  *  \brief Символы в строке для создания уникальных идентификаторов

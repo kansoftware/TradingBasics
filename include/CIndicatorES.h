@@ -44,4 +44,3 @@ class CIndicatorES : public PowellsMethod {
 };
 
 #endif /* CINDICATORES_H */
-

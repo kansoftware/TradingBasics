@@ -1,14 +1,15 @@
 // This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-/* 
+/** 
  * File:   BarPeriod.cpp
- * Author: wellington
+ * Author: kan
  * 
  * Created on December 19, 2016, 5:37 PM
  */
 
 #include <cassert>
+
 #include "BarPeriod.h"
 
 const char *gBarPeriodNames[ static_cast<size_t>( TBarPeriod::maxValue ) ] = { "0MIN", "1MIN", "5MIN", "10MIN", "15MIN", "1HOUR", "4HOURS", "1DAY", "1WEEK" };

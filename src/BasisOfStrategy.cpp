@@ -1,9 +1,12 @@
 // This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-//
-// Created by kan on 11.11.2015.
-//
+/** 
+ * File:   BarPeriod.cpp
+ * Author: kan
+ * 
+ * Created on 11.11.2015.
+ */
 
 #include <cmath>
 #include <time.h>

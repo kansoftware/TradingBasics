@@ -1,20 +1,24 @@
 // This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-//
-// Created by kan on 10.11.2015.
-// @lastupdate 2016.03.04
-//
+/** 
+ * File:   BarPeriod.cpp
+ * Author: victorg(mq5), kan(c++)
+ * 
+ * Created on 10.11.2015
+ * @lastupdate 2016.03.04
+ */
 
 #include <cmath>
 #include <stdexcept>
 
 #include "DelphisRound.h"
-#include "Indicators.h"
 #include "Comparers.h"
 #include "Forecasting.h"
 #include "PnlAction.h"
 #include "RollRange.h"
+
+#include "Indicators.h"
 
 //------------------------------------------------------------------------------------------
 TPriceSeries _TrueRange( const TBarSeries & aBars ) {

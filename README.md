@@ -1,4 +1,4 @@
-# Trading Basics library
+# Trading basics library
 
 ## About
 This is classes, types and functions for creating trading strategies and bots with C++ compilers.
@@ -13,6 +13,7 @@ cd TradingBasics
 mkdir build; cd build
 cmake -DCMAKE_C_FLAGS="-O3 -march=native -DNDEBUG" -DCMAKE_CXX_FLAGS="-O3 -march=native -DNDEBUG" ..
 cmake --build . -- -j 4
+
 ```
 
 ## Testing
@@ -22,6 +23,7 @@ mkdir buildtest; cd buildtest
 cmake -DBUILD_TESTING=ON ..
 cmake --build . -- -j 4
 make test
+
 ```
 
 
@@ -42,7 +44,7 @@ target_link_libraries( #YOUR_TARGET_PROJECT# TRADING_BASICS )
 ```
 or
 ```cmake
-set( TRADING_BASICS_PATH "$ENV{HOME}/cpp/companents/TradingBasics/" )
+set( TRADING_BASICS_PATH "#YOUR_PATH_TO#/TradingBasics/" )
 include_directories( "${TRADING_BASICS_PATH}include" )
 link_directories( "${TRADING_BASICS_PATH}build" )
 

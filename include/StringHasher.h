@@ -1,7 +1,7 @@
 /**
  * \file StringHasher.h
  * \brief Модуль содержащий функции для перевода чисел в хеш-строку
- * \author Андрей Карбанов <kan@kansoftware.ru>
+ * \author kan <kansoftware.ru>
  * \since 2015-08-25
  * \date 2015-08-25
  */
@@ -30,4 +30,3 @@ char GetSymbolByIdx( const size_t aIdx );
 size_t GetSymbolsCount();
 
 #endif	/* STRINGHASHER_H */
-

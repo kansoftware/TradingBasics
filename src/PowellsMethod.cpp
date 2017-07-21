@@ -1,9 +1,9 @@
 // This is an independent project of an individual developer. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-/* 
+/** 
  * File:   PowellsMethod.cpp
- * Author: wellington
+ * Author: victorg(mq5), kan(c++)
  * 
  * Created on January 20, 2017, 3:58 PM
  */
@@ -23,7 +23,6 @@
 //-----------------------------------------------------------------------------------
 // Constructor
 //-----------------------------------------------------------------------------------
-
 PowellsMethod::PowellsMethod() {
     ItMaxPowell = 200;
     FtolPowell = 1e-6;
@@ -32,7 +31,6 @@ PowellsMethod::PowellsMethod() {
 }
 
 //-----------------------------------------------------------------------------------
-
 void PowellsMethod::powell() {
     size_t m, n, ibig;
     double del, fp, fptt, t;
@@ -84,7 +82,6 @@ void PowellsMethod::powell() {
 }
 
 //-----------------------------------------------------------------------------------
-
 void PowellsMethod::linmin() {
     double xx, xmin, fx, fb, fa, bx, ax;
 
@@ -104,7 +101,6 @@ void PowellsMethod::linmin() {
 }
 
 //-----------------------------------------------------------------------------------
-
 void PowellsMethod::mnbrak(
         double &ax,
         double &bx,
@@ -159,8 +155,8 @@ void PowellsMethod::mnbrak(
         SHFT(fa, fb, fc, fu)
     }
 }
-//-----------------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------------
 double PowellsMethod::brent(double ax, double bx, double cx, double &xmin) {
     int iter;
     double a, b, d, e, etemp, fu, fv, fw, fx, p, q, r, tol1, tol2, u, v, w, x, xm;
@@ -221,8 +217,8 @@ double PowellsMethod::brent(double ax, double bx, double cx, double &xmin) {
     xmin = x;
     return (fx);
 }
-//-----------------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------------
 double PowellsMethod::f1dim(double x) {
     double f;
 
@@ -230,8 +226,8 @@ double PowellsMethod::f1dim(double x) {
     f = func(Xt);
     return (f);
 }
-//-----------------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------------
 int PowellsMethod::Optimize(TDoubles &p, const size_t n) {
     int ret;
 
@@ -259,4 +255,5 @@ int PowellsMethod::Optimize(TDoubles &p, const size_t n) {
     }
     return (ret);
 }
+
 //-----------------------------------------------------------------------------------

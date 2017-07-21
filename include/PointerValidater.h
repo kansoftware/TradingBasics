@@ -1,7 +1,7 @@
 /**
  * \file PointerValidater.h
  * \brief Модуль с шаблонами для работы с указателями
- * \author Андрей Карбанов <kan@kansoftware.ru>
+ * \author kan <kansoftware.ru>
  * \since 2014-04-22
  * \date 2016-05-24
  * Об атомарности исполнения функций должен заботиться программист

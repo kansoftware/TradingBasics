@@ -1,7 +1,7 @@
 /**
  * \file DelphisRound.h
  * \brief Модуль содержащий методы для округления с приведением типа, как в Дельфи
- * \author Андрей Карбанов <kan@kansoftware.ru>
+ * \author kan <kansoftware.ru>
  * \since 2015-08-25
  * \date 2017-04-24
  */

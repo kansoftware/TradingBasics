@@ -3,7 +3,7 @@
 
 /* 
  * File:   CIndicatorES.cpp
- * Author: wellington
+ * Author: victorg(mq5), kan(c++)
  * 
  * Created on January 20, 2017, 4:14 PM
  */

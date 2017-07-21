@@ -1,7 +1,7 @@
 /**
  * \file RollRange.h
  * \brief Модуль реализующий перекатывающиеся индикаторы
- * \author 2016 Stanislav Kovalevsky
+ * \author Stanislav Kovalevsky <https://bitbucket.org/quanttools/>
  * \since 2016-10-10
  * \date 2017-03-14
  * Модуль заимствован с https://bitbucket.org/quanttools/quanttools

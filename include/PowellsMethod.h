@@ -1,8 +1,8 @@
-/* 
- * File:   PowellsMethod.h
- * Author: https://www.mql5.com/ru/articles/318
- *
- * Created on January 20, 2017, 3:58 PM
+/**
+ * \file PowellsMethod.h
+ * \brief Модуль с шаблонами для работы с указателями
+ * \author https://www.mql5.com/ru/articles/318
+ * \since 2017-01-20
  */
 
 #ifndef POWELLSMETHOD_H
@@ -45,4 +45,3 @@ class PowellsMethod {
 };
 
 #endif /* POWELLSMETHOD_H */
-

@@ -23,7 +23,6 @@ TEST( Basic, testCompare ) {
     EXPECT_TRUE( IsEqual( 5.5, 5.5000001 ) );
 }
 
-
 //------------------------------------------------------------------------------------------
 TEST( Basic, testPrice ) {
     EXPECT_TRUE( IsValidPrice( 5.5 ) );
