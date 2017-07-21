@@ -13,8 +13,17 @@ cd TradingBasics
 mkdir build; cd build
 cmake -DCMAKE_C_FLAGS="-O3 -march=native -DNDEBUG" -DCMAKE_CXX_FLAGS="-O3 -march=native -DNDEBUG" ..
 cmake --build . -- -j 4
+```
+
+## Testing
+```bash
+cd ..
+mkdir buildtest; cd buildtest
+cmake -DBUILD_TESTING=ON ..
+cmake --build . -- -j 4
 make test
 ```
+
 
 ## Usage
 Into your project include folder TradingBasics/include. Add builded lib to your project.
