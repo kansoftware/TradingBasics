@@ -781,3 +781,72 @@ TPriceSeries _IntradayParabolicSar( const TBarSeries & aBars, const double aAf, 
 }
 
 //------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------
+TPriceSeries _AbsoluteZigZag( const TBarSeries & aBars, const double aGap ) {
+    
+    if( not isPositiveValue( aGap )  ) {
+        throw std::logic_error( "aGap can be only positive!" );
+    }
+    
+    TPriceSeries lResult( aBars.size() );
+    
+    /////////////////////////////
+    auto lSideToValue = []( const TDealSide aSide )->TPrice {
+        assert( aSide != TDealSide::Any );
+        assert( aSide != TDealSide::None );
+        return TDealSide::Sell == aSide ? -1.0 : 1.0 ;
+    };
+    const TPrice gFlatValue = 0.0;
+    /////////////////////////////
+    
+    TDealSide lSide = TDealSide::Buy;
+    TPrice lCurrHead = aBars[ 0 ].High;
+    lResult[ 0 ] = TSimpleTick{ aBars[ 0 ].DateTime, lCurrHead, lSideToValue( lSide ) };
+    size_t lLastHeadindex = 0;
+    
+    for( size_t i = 1; i < aBars.size(); ++i  ) {
+ 
+        if( lSide == TDealSide::Buy ) {
+
+            if( aBars[ i ].High > lCurrHead ) {
+                
+                lCurrHead = aBars[ i ].High;             
+                lResult[ i ] = TSimpleTick{ aBars[ i ].DateTime, lCurrHead, lSideToValue( lSide ) };
+                lResult[ lLastHeadindex ] = TSimpleTick{ aBars[ lLastHeadindex ].DateTime, gFlatValue, lSideToValue( lSide ) };
+                lLastHeadindex = i;
+
+            } else if( aBars[ i ].Low < ( lCurrHead - aGap ) ) {
+                
+                lSide = TDealSide::Sell;
+                lCurrHead = aBars[ i ].Low;
+                lLastHeadindex = i;
+                lResult[ lLastHeadindex ] = TSimpleTick{ aBars[ lLastHeadindex ].DateTime, lCurrHead, lSideToValue( lSide ) };
+
+            } else {
+                lResult[ i ] = TSimpleTick{ aBars[ i ].DateTime, gFlatValue, lSideToValue( lSide ) };
+            }
+
+        } else if( lSide == TDealSide::Sell ) {
+
+            if( aBars[ i ].Low < lCurrHead ) {
+                
+                lCurrHead = aBars[ i ].Low;
+                lResult[ i ] = TSimpleTick{ aBars[ i ].DateTime, lCurrHead, lSideToValue( lSide ) };
+                lResult[ lLastHeadindex ] = TSimpleTick{ aBars[ lLastHeadindex ].DateTime, gFlatValue, lSideToValue( lSide ) };
+                lLastHeadindex = i;
+                
+            } else if( aBars[ i ].High >= ( lCurrHead + aGap ) ) {
+
+                lSide = TDealSide::Buy;
+                lCurrHead = aBars[ i ].High;
+                lLastHeadindex = i;
+                lResult[ lLastHeadindex ] = TSimpleTick{ aBars[ lLastHeadindex ].DateTime, lCurrHead, lSideToValue( lSide ) };
+
+            } else {
+                lResult[ i ] = TSimpleTick{ aBars[ i ].DateTime, gFlatValue, lSideToValue( lSide ) };
+            }
+        }
+    }
+    
+    return lResult;
+}

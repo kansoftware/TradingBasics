@@ -221,6 +221,15 @@ Rcpp::NumericVector ZigZag( const Rcpp::NumericMatrix & aOHLCV, const double aGa
 }
 
 //------------------------------------------------------------------------------------------
+Rcpp::NumericVector AbsoluteZigZag( const Rcpp::NumericMatrix & aOHLCV, const double aGap ) {
+    const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
+    const TPriceSeries lResult( _AbsoluteZigZag(  lBars,  aGap ) );
+    
+    const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
+    return PriceSeriesToXts( lResult, lTZone );
+}
+
+//------------------------------------------------------------------------------------------
 Rcpp::NumericMatrix ConvertBars( const Rcpp::NumericMatrix & aXts, const int aPeriod ) {
     
     TBarSeries lNewBars;
