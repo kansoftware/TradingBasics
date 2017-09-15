@@ -39,7 +39,10 @@ Rcpp::List DI( const Rcpp::NumericMatrix & aXts, const int aPeriod = 14 );
 // [[Rcpp::export]]
 Rcpp::NumericVector ZigZag( const Rcpp::NumericMatrix & aOHLCV, const double aGap );
 //------------------------------------------------------------------------------------------
-        
+
+// [[Rcpp::export]]
+ Rcpp::NumericVector AbsoluteZigZag( const Rcpp::NumericMatrix & aOHLCV, const double aGap ); 
+ 
 //' @title The Parabolic Stop-and-Reverse calculates a trailing stop. Developed by J. Welles Wilder
 //' @name SAR
 //' @param aOHLCV xts object contains OHLCV prices

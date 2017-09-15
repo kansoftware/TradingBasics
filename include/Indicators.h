@@ -33,6 +33,7 @@ TPriceSeries _KAMA( const TPriceSeries & aPrices, const int aPeriod, const doubl
 const size_t gSARStabilizationDelay = 200 ;
 TPriceSeries _ParabolicSar( const TBarSeries & aBars, const double aAf, const double aMaxAf );
 TPriceSeries _IntradayParabolicSar( const TBarSeries & aBars, const double aAf, const double aMaxAf );
+TPriceSeries _AbsoluteZigZag( const TBarSeries & aBars, const double aGap );
 TPriceSeries _MACD( const TPriceSeries & aPrices, const int aFastPeriod, const int aSlowPeriod, const int aSmoothPeriod );
 TPriceSeries _ZigZag( const TBarSeries & aBars, const double aGap );
 
