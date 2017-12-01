@@ -102,7 +102,7 @@ TPrice DealsToPNLCoefficient(
     const size_t aMinDeals = 10,
     const size_t aQuantTime = 86400 * 7 );
 
-TPriceSeries DealsToDaily( const TPriceSeries & aPnls );
+TPriceSeries PnlsToDaily( const TPriceSeries & aPnls );
 bool IsGrows( const TPriceSeries & aDailyPnls, const size_t aPeriod, const size_t aTollerance = 1 );
 
 #endif //BACKTESTER_PNLACTION_H

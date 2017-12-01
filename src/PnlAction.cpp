@@ -47,7 +47,7 @@ TPriceSeries DealsToPnLs( const TDeals & aDeals ) {
 
     //<editor-fold desc="Собственно конвертация">
     size_t i = 0;
-    for( TDeal lDeal : lDeals ) {
+    for( const TDeal& lDeal : lDeals ) {
         TSimpleTick lTick {
             lDeal.CloseTime,
             lDeal.DealSide == TDealSide::Buy ? lDeal.ClosePrice - lDeal.OpenPrice : lDeal.OpenPrice - lDeal.ClosePrice,
@@ -160,10 +160,10 @@ TPriceSeries ReductionOfTheIncome(
 //------------------------------------------------------------------------------------------
 TPrice PnLsToMoneyResult( const TPriceSeries & aPnl ) {
     TPrice lResult = 0;
-    for( size_t i = 0; i < aPnl.size(); ++i ) {
-        lResult += aPnl[ i ].Price;
+    for( const TSimpleTick& lPnl : aPnl ) {
+        lResult += lPnl.Price * lPnl.Volume;
     }
-
+    
     return lResult;
 }
 
@@ -220,7 +220,7 @@ TPrice DealsToPNLCoefficient(
     std::list< TSimpleTick > lPnLs;
     lPnLs.push_back( {aFirstPoint, 0.0, 0} );
 
-    for( auto &lDeal : aDeals ) {
+    for( const auto &lDeal : aDeals ) {
         TInnerDate lEmptyDate = lDeal.OpenTime;
         TSimpleTick lEmptyTick = { lEmptyDate, 0.0, 0 };
         lPnLs.push_back( lEmptyTick );
@@ -268,7 +268,7 @@ TPrice DealsToPNLCoefficient(
     TPrice lMaxPnl = 0.0; //если lPnLValue>0 значит точно есть положительный pnl за интервал
     TPrice lMidPnl = 0.0;
     size_t lDealCounter = 0 ;
-    for( auto ldPnl : lQuantPnL ) {
+    for( const auto ldPnl : lQuantPnL ) {
         if( ldPnl > lMaxPnl ){ lMaxPnl = ldPnl; }
 
         lMidPnl += ldPnl ;
@@ -284,7 +284,7 @@ TPrice DealsToPNLCoefficient(
     TPrice lCurrDD = 0.0;
     TPrice lSumCurrDD = 0.0;
     TInnerDate lPrioreDate = aFirstPoint ;
-    for( auto lTick : lPnLs ) {
+    for( const auto& lTick : lPnLs ) {
 
         if( isZero( lCurrDD ) and lTick.Price < 0.0 ) {
 
@@ -325,13 +325,13 @@ TPrice DealsToPNLCoefficient(
 }
 
 //------------------------------------------------------------------------------------------
-TPrice DealsToCoeff( 
-    const TBarSeries & aBars, 
-    const TDeals & aDeals, 
-    const size_t aMinDeals, 
-    TPrice & aoPnl, 
-    TPrice & aoMaxDD, 
-    size_t & aoMaxPos, 
+TPrice DealsToCoeff(
+    const TBarSeries & aBars,
+    const TDeals & aDeals,
+    const size_t aMinDeals,
+    TPrice & aoPnl,
+    TPrice & aoMaxDD,
+    size_t & aoMaxPos,
     size_t & aoMeadPos ) {
     #ifdef FULLDATA
         std::cout << "aDeals.size() = " << aDeals.size() << std::endl;
@@ -469,7 +469,7 @@ TDoubles ToDoublesArray( const TPriceSeries & aPriceSeries ) {
 }
 
 //------------------------------------------------------------------------------------------
-TPriceSeries DealsToDaily( const TPriceSeries & aPnls ) {
+TPriceSeries PnlsToDaily( const TPriceSeries & aPnls ) {
     
     if( aPnls.empty() ) {
         return TPriceSeries();
@@ -477,16 +477,16 @@ TPriceSeries DealsToDaily( const TPriceSeries & aPnls ) {
     TInnerDate lMinDate = gMaxInteger;
     TInnerDate lMaxDate = 0;
     
-    for( auto &lDeal : aPnls ) {
+    for( const auto &lDeal : aPnls ) {
         const TInnerDate lDealDate = Trunc( lDeal.DateTime / gOneDay );
         lMinDate = IsLess( lMinDate, lDealDate ) ? lMinDate : lDealDate;
         lMaxDate = IsGreat( lMaxDate, lDealDate ) ? lMaxDate : lDealDate;
     }
     
     TPriceSeries lResult( ToSize_t( lMaxDate-lMinDate+1 ) );
-    for( auto &lDeal : aPnls ) {
+    for( const auto &lDeal : aPnls ) {
         const size_t lDealDate = ToSize_t( Trunc( lDeal.DateTime / gOneDay ) - lMinDate );
-        const TPrice lDealPnl = lDeal.Price;
+        const TPrice lDealPnl = lDeal.Price * (lDeal.Volume == 0 ? 1.0 : lDeal.Volume );
         
         TSimpleTick lDayDeal = lResult[ lDealDate ];
         lDayDeal.DateTime = ToDouble( Trunc( lDeal.DateTime / gOneDay ) * gOneDay );
