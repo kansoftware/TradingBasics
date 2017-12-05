@@ -158,10 +158,10 @@ TPriceSeries ReductionOfTheIncome(
 }
 
 //------------------------------------------------------------------------------------------
-TPrice PnLsToMoneyResult( const TPriceSeries & aPnl ) {
+TPrice PnLsToMoneyResult( const TPriceSeries & aPnl, const bool aUseVolume ) {
     TPrice lResult = 0;
     for( const TSimpleTick& lPnl : aPnl ) {
-        lResult += lPnl.Price * lPnl.Volume;
+        lResult += lPnl.Price * ( aUseVolume ? lPnl.Volume : 1.0 );
     }
     
     return lResult;

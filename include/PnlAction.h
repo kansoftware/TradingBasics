@@ -74,7 +74,7 @@ bool CalcDrawDown(
     TInnerDate & aoBegin,
     TInnerDate & aoReturn );
 
-TPrice PnLsToMoneyResult( const TPriceSeries & aPnl );
+TPrice PnLsToMoneyResult( const TPriceSeries & aPnl, const bool aUseVolume = false );
 
 TPriceSeries ReductionOfTheIncome(
     const TPriceSeries & aPnL,

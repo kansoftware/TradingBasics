@@ -37,9 +37,9 @@ const double gOneHour = 3600.0;
 const double gStartingTime = 975888000;
 
 struct TSimpleTick {
-    TInnerDate DateTime;
-    TPrice Price;
-    double Volume;
+    TInnerDate DateTime=gStartingTime;
+    TPrice Price=0.0;
+    double Volume=0.0;
 };
 
 typedef std::vector< TSimpleTick > TPriceSeries;
@@ -47,12 +47,12 @@ typedef std::vector< TSimpleTick > TPriceSeries;
 typedef std::map< std::string, TPriceSeries > TIndicators;
 
 struct TSimpleBar {
-    TInnerDate DateTime;
-    TPrice Open;
-    TPrice High;
-    TPrice Low ;
-    TPrice Close;
-    double Volume;
+    TInnerDate DateTime=gStartingTime;
+    TPrice Open=0.0;
+    TPrice High=0.0;
+    TPrice Low=0.0;
+    TPrice Close=0.0;
+    double Volume=-1.0;
 };
 
 void Reset( TSimpleBar &aBar );
@@ -60,7 +60,7 @@ TSimpleBar operator+( const TSimpleBar &aStartBar, const TSimpleBar &aFinishBar 
 bool IsValidBar( const TSimpleBar & aBar );
 
 typedef std::vector< TSimpleBar > TBarSeries;
-const TSimpleBar gEmptyBar{0.0,0.0,0.0,0.0,0.0,-1.0};
+const TSimpleBar gEmptyBar{gStartingTime,0.0,0.0,0.0,0.0,-1.0};
 
 bool IsOneDay( const TInnerDate aLeft, const TInnerDate aRight );
 bool IsOneHour( const TInnerDate aLeft, const TInnerDate aRight, const double aDuration = 1.0 );
