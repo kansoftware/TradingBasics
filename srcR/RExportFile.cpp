@@ -126,6 +126,19 @@ double DealsToPnLValue( const Rcpp::DataFrame & aDeals, const SEXP & aParams ) {
 }
 
 //------------------------------------------------------------------------------------------
+double DealsToStatValue( const Rcpp::DataFrame & aDeals, const SEXP & aParams ) {
+    const Rcpp::List lParam( aParams );
+    double lFirstPrice = Rcpp::as<double>( lParam["FirstPrice"] );
+//    double lMinDeals = Rcpp::as<double>( lParam["MinDeals"] );
+
+    const TDeals lDeals( DataFrameToDeals( aDeals, lFirstPrice ) );
+    const TPriceSeries lPns(DealsToPnLs( lDeals ));
+    
+    return PnLsToMoneyStatValue(lPns);
+}
+
+
+//------------------------------------------------------------------------------------------
 Rcpp::List DealsToCoeffUnrealized( const Rcpp::NumericMatrix & aBars, const Rcpp::DataFrame & aDeals, const SEXP & aParams ) {
     
     const TBarSeries lBars = XtsToBarSeries( aBars );

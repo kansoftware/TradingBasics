@@ -81,6 +81,10 @@ double DealsToPnLValue( const Rcpp::DataFrame & aDeals, const SEXP & aParams );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
+double DealsToStatValue( const Rcpp::DataFrame & aDeals, const SEXP & aParams );
+//------------------------------------------------------------------------------------------
+
+// [[Rcpp::export]]
 Rcpp::List DealsToCoeffUnrealized( const Rcpp::NumericMatrix & aBars, const Rcpp::DataFrame & aDeals, const SEXP & aParams );
 //------------------------------------------------------------------------------------------
 
@@ -191,7 +195,7 @@ inline TPriceSeries IndicatorToPriceSeries( const Rcpp::NumericMatrix & aData  )
             const TSimpleTick lValue{
                 lIndex[ lRowNum ],
                 aData.at( lRowNum, 0 ),
-                0
+                1
             };
             lResult[ lRowNum ]= lValue;
         }
