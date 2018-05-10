@@ -51,7 +51,7 @@ TPriceSeries DealsToPnLs( const TDeals & aDeals ) {
     for( const TDeal& lDeal : lDeals ) {
         TSimpleTick lTick {
             lDeal.CloseTime,
-            lDeal.DealSide == TDealSide::Buy ? lDeal.ClosePrice - lDeal.OpenPrice : lDeal.OpenPrice - lDeal.ClosePrice,
+            ((lDeal.DealSide == TDealSide::Buy) ? (lDeal.ClosePrice - lDeal.OpenPrice) : (lDeal.OpenPrice - lDeal.ClosePrice)),
             ToDouble( lDeal.Volume )
         };
 
@@ -392,9 +392,9 @@ TPrice DealsToPNLCoefficient(
         TInnerDate lBeginDate = lDeal.CloseTime;
 
         const TPrice lDealPnl =
-            lDeal.DealSide == TDealSide::Buy ?
-                lDeal.ClosePrice - lDeal.OpenPrice :
-                lDeal.OpenPrice - lDeal.ClosePrice;
+            (lDeal.DealSide == TDealSide::Buy) ?
+                (lDeal.ClosePrice - lDeal.OpenPrice) :
+                (lDeal.OpenPrice - lDeal.ClosePrice);
         
         TSimpleTick lRealTick = { lBeginDate, lDealPnl, 1 };
         lPnLs.push_back( lRealTick );
@@ -612,7 +612,7 @@ TPrice DealsToCoeff(
     aoMaxPos = *lPosition.rbegin();
     aoMeadPos = lPosition[ lPosition.size() / 2 ];
 
-    const TPrice lResult = isZero( std::abs( aoPnl ) + aoMaxDD ) ? gMaxBedAttraction : aoPnl / ( std::abs( aoPnl ) + aoMaxDD ) ;
+    const TPrice lResult = isZero( std::abs( aoPnl ) + aoMaxDD ) ? gMaxBedAttraction : (aoPnl / ( std::abs( aoPnl ) + aoMaxDD )) ;
     #ifdef FULLDATA
     std::cout << "lResult = " << lResult << std::endl;
     #endif
@@ -650,7 +650,7 @@ TPriceSeries PnlsToDaily( const TPriceSeries & aPnls ) {
     TPriceSeries lResult( ToSize_t( lMaxDate-lMinDate+1 ) );
     for( const auto &lDeal : aPnls ) {
         const size_t lDealDate = ToSize_t( Trunc( lDeal.DateTime / gOneDay ) - lMinDate );
-        const TPrice lDealPnl = lDeal.Price * (lDeal.Volume == 0 ? 1.0 : lDeal.Volume );
+        const TPrice lDealPnl = lDeal.Price * ((lDeal.Volume == 0) ? 1.0 : lDeal.Volume );
         
         TSimpleTick lDayDeal = lResult[ lDealDate ];
         lDayDeal.DateTime = ToDouble( Trunc( lDeal.DateTime / gOneDay ) * gOneDay );

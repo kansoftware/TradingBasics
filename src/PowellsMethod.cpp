@@ -17,8 +17,8 @@
 #define CGOLD  0.3819660
 #define GLIMIT 100.0
 #define SHFT(a,b,c,d) (a)=(b);(b)=(c);(c)=(d);
-#define SIGN(a,b) ((b) >= 0.0 ? fabs(a) : -fabs(a))
-#define FMAX(a,b) (a>b?a:b)
+#define SIGN(a,b) (((b) >= 0.0) ? fabs(a) : -fabs(a))
+#define FMAX(a,b) ((a>b)?a:b)
 
 //-----------------------------------------------------------------------------------
 // Constructor
@@ -162,8 +162,8 @@ double PowellsMethod::brent(double ax, double bx, double cx, double &xmin) {
     int iter;
     double a, b, d, e, etemp, fu, fv, fw, fx, p, q, r, tol1, tol2, u, v, w, x, xm;
 
-    a = (ax < cx ? ax : cx);
-    b = (ax > cx ? ax : cx);
+    a = ((ax < cx) ? ax : cx);
+    b = ((ax > cx) ? ax : cx);
     d = 0.0;
     e = 0.0;
     x = w = v = bx;
@@ -185,14 +185,14 @@ double PowellsMethod::brent(double ax, double bx, double cx, double &xmin) {
             etemp = e;
             e = d;
             if (fabs(p) >= fabs(0.5 * q * etemp) || p <= q * (a - x) || p >= q * (b - x))
-                d = CGOLD * (e = (x >= xm ? a - x : b - x));
+                d = CGOLD * (e = ((x >= xm) ? (a - x) : (b - x)));
             else {
                 d = p / q;
                 u = x + d;
                 if (u - a < tol2 || b - u < tol2)d = SIGN(tol1, xm - x);
             }
-        } else d = CGOLD * (e = (x >= xm ? a - x : b - x));
-        u = (fabs(d) >= tol1 ? x + d : x + SIGN(tol1, d));
+        } else d = CGOLD * (e = ((x >= xm) ? (a - x) : (b - x)));
+        u = (fabs(d) >= tol1 ? (x + d) : (x + SIGN(tol1, d)));
         fu = f1dim(u);
         if (fu <= fx) {
             if (u >= x)a = x;
@@ -244,7 +244,7 @@ int PowellsMethod::Optimize(TDoubles &p, const size_t n) {
     Pt.resize(N);
     Ptt.resize(N);
     Xit.resize(N);
-    for (size_t i = 0; i < N; i++)for (size_t j = 0; j < N; j++)Xi[i + N * j] = (i == j ? 1.0 : 0.0);
+    for (size_t i = 0; i < N; i++)for (size_t j = 0; j < N; j++)Xi[i + N * j] = ((i == j) ? 1.0 : 0.0);
     for (size_t i = 0; i < N; i++)P[i] = p[i];
     MaxIterFlag = 0;
     powell();

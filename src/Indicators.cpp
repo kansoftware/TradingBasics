@@ -263,7 +263,7 @@ bool _DI( const TBarSeries &aBars, const int aPeriod, TPriceSeries &aoDMIp, TPri
         lTRSum = ( lTRSum * ToDouble( lPeriod - 1 ) / ToDouble( lPeriod ) + lTR[i].Price );
         const double lDMIp = 
             ( isPositiveValue( lTRSum ) ?
-                100.0 * lDMSump / lTRSum :
+                (100.0 * lDMSump / lTRSum) :
                 0.0 );
         TSimpleTick lTick{ aBars[i].DateTime, lDMIp, aBars[i].Volume };
         aoDMIp[i] = lTick;
@@ -271,7 +271,7 @@ bool _DI( const TBarSeries &aBars, const int aPeriod, TPriceSeries &aoDMIp, TPri
         lDMSumn = ( lDMSumn * ToDouble( lPeriod - 1 ) / ToDouble( lPeriod ) + lDMn[i].Price );
         const double lDMIn = 
             ( isPositiveValue( lTRSum ) ?
-                100.0 * lDMSumn / lTRSum :
+                (100.0 * lDMSumn / lTRSum) :
                 0.0 );
         lTick.Price = lDMIn;
         aoDMIn[i] = lTick;
