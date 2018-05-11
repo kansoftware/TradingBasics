@@ -137,6 +137,18 @@ double DealsToStatValue( const Rcpp::DataFrame & aDeals, const SEXP & aParams ) 
     return PnLsToMoneyStatValue(lPns);
 }
 
+//------------------------------------------------------------------------------------------
+double DealsToMonteCarloValue( const Rcpp::DataFrame & aDeals, const SEXP & aParams ) {
+    const Rcpp::List lParam( aParams );
+    double lFirstPrice = Rcpp::as<double>( lParam["FirstPrice"] );
+    const size_t N = Rcpp::as<size_t>( lParam["N"] ) ;
+    const size_t aSamples = Rcpp::as<size_t>( lParam["Samples"] ) ;
+    
+    const TDeals lDeals( DataFrameToDeals( aDeals, lFirstPrice ) );
+    const TPriceSeries lPns(DealsToPnLs( lDeals ));
+    
+    return PnLsToMoneyMonteCarlo(lPns,false,N,aSamples);    
+}
 
 //------------------------------------------------------------------------------------------
 Rcpp::List DealsToCoeffUnrealized( const Rcpp::NumericMatrix & aBars, const Rcpp::DataFrame & aDeals, const SEXP & aParams ) {

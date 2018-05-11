@@ -17,6 +17,9 @@
 #include <algorithm>
 #include <cassert>
 #include <numeric>
+#include <climits>
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
 
 #include "DelphisRound.h"
 #include "Comparers.h"
@@ -271,9 +274,9 @@ const double gStudentCV[100] = { //The table values are critical values of the t
     0.19842,
     0.197415378537662
 };
-TPrice PnLsToMoneyStatValue( const TPriceSeries & aPnl, const bool aUseVolume ) {
+TPrice PnLsToMoneyStatValue( const TPriceSeries & aPnl, const bool aUseVolume, const size_t N ) {
     const size_t lSize = aPnl.size();
-    if( lSize < 2) {
+    if( lSize < 2 or N < 2 ) {
         return 0.0;
     }
     
@@ -294,14 +297,14 @@ TPrice PnLsToMoneyStatValue( const TPriceSeries & aPnl, const bool aUseVolume ) 
     
     lstdev /= ToDouble(lSize);
     
-    const size_t lStudAN = ( lSize<102 ) ?
-        ( gStudentCV[lSize-2] ) :
+    const size_t lStudAN = ( N<102 ) ?
+        ( gStudentCV[N-2] ) :
         ( 1.970 //t.975 n is very big
           /
-          sqrt( lSize )
+          sqrt( N )
         );
     
-    return (mean - 2.0*sqrt(lstdev)*lStudAN)*ToDouble(lSize);
+    return (mean - sqrt(lstdev)*lStudAN)*ToDouble(lSize);
 }
 
 //------------------------------------------------------------------------------------------
@@ -329,6 +332,31 @@ TPrice PnLsToMoneyStatValueGost( const TPriceSeries & aPnl, const bool aUseVolum
     lstdev /= (ToDouble(lSize) - 1.5);//ГОСТ Р 8.736-2011
     
     return (mean - sqrt(lstdev))*ToDouble(lSize);
+}
+
+//------------------------------------------------------------------------------------------
+TPrice PnLsToMoneyMonteCarlo( const TPriceSeries & aPnl, const bool aUseVolume, const size_t N, const size_t aSamples ){
+    const size_t lSize = aPnl.size();
+    if( lSize < 2 or N < 2 ) {
+        return 0.0;
+    }
+    
+    srand( time(NULL) );
+    TPrice lResult = ULLONG_MAX; //очень большое число
+    
+    for( size_t i=0; i<aSamples; ++i ){
+        TPrice lPnlTest = 0.0;
+        for( size_t j=0; j<N; ++j ){
+            const size_t lID = rand() % lSize;
+            const TPrice lPnlSample = aPnl[lID].Price * (aUseVolume ? aPnl[lID].Volume : 1.0);
+            lPnlTest += lPnlSample;
+        }
+        lPnlTest /= N;
+        
+        lResult = std::min(lResult, lPnlTest);
+    }
+    
+    return lResult * ToDouble(lSize);
 }
 
 //------------------------------------------------------------------------------------------

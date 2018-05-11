@@ -85,6 +85,10 @@ double DealsToStatValue( const Rcpp::DataFrame & aDeals, const SEXP & aParams );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
+double DealsToMonteCarloValue( const Rcpp::DataFrame & aDeals, const SEXP & aParams );
+//------------------------------------------------------------------------------------------
+
+// [[Rcpp::export]]
 Rcpp::List DealsToCoeffUnrealized( const Rcpp::NumericMatrix & aBars, const Rcpp::DataFrame & aDeals, const SEXP & aParams );
 //------------------------------------------------------------------------------------------
 
