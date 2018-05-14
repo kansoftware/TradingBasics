@@ -3,7 +3,7 @@
  * \brief Модуль основные определения для работы с ценами
  * \author kan <kansoftware.ru>
  * \since 2015-08-25
- * \date 2018-02-22
+ * \date 2016-04-12
  * Дополнительные функции см. в модуле PricesUtils.h
  */
 
@@ -14,7 +14,7 @@ typedef double TPrice;
 
 ///\todo можно ввести таблицу с максимальными ценами для каждого инструмента
 const TPrice gMaxPrice = 333333.33;
-const TPrice gMinPrice = 0.00000001;//0.01
+const TPrice gMinPrice = 0.01;
 const TPrice gDefaultPrice = 0.00;
 
 /**

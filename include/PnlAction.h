@@ -2,9 +2,9 @@
  * \file PnlAction.h
  * \brief Модуль хранящий в себе типы периодов для баров и основные методы работы с ними
  * \author kan <kansoftware.ru>
- * \since 2015-11-11
- * \date 2018-04-28
- * Модуль используется неизменно в проектах TradeBot и [R] BackTester
+ * \since 11.11.2015
+ * \date 2016-12-20
+ * Модуль используется неизменно в проетах TradeBot и [R] BackTester
  */
 
 #ifndef BACKTESTER_PNLACTION_H
@@ -25,7 +25,9 @@ struct TDeal {
     TDealSide DealSide = TDealSide::None;
     size_t Volume = 0;
 
-    TDeal(){;}
+    TDeal() {
+//            Reset();
+    }
 
     TDeal(
         const TInnerDate aOpenTime,
@@ -56,7 +58,7 @@ struct TDeal {
         Volume = 0;
     }
 
-    bool InAction() const { return DealSide == TDealSide::Buy or DealSide == TDealSide::Sell; }
+    bool InAction() const { return DealSide == TDealSide::Buy or DealSide == TDealSide::Sell ; }
 };
 
 typedef std::list< TDeal > TDeals;
@@ -73,8 +75,6 @@ bool CalcDrawDown(
     TInnerDate & aoReturn );
 
 TPrice PnLsToMoneyResult( const TPriceSeries & aPnl, const bool aUseVolume = false );
-TPrice PnLsToMoneyStatValue( const TPriceSeries & aPnl, const bool aUseVolume = false );
-TPrice PnLsToMoneyStatValueGost( const TPriceSeries & aPnl, const bool aUseVolume = false );
 
 TPriceSeries ReductionOfTheIncome(
     const TPriceSeries & aPnL,
