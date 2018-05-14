@@ -61,7 +61,7 @@ Rcpp::NumericVector MACD( const Rcpp::NumericMatrix & aXts, const int aFastPerio
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
-Rcpp::List Forecasting( const Rcpp::NumericMatrix & aXts, const int aForecastPeriod=100, const double aConfidenceIntervals=1.29, const int aType = 3 );
+Rcpp::List Forecasting( const Rcpp::NumericMatrix & aXts, const int aForecastPeriod = 100, const double aConfidenceIntervals = 1.29, const int aType = 3 );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
@@ -69,7 +69,7 @@ Rcpp::List RollMinMax( const Rcpp::NumericMatrix & aXts, const int aPeriod );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
-Rcpp::NumericMatrix ConvertBars( const Rcpp::NumericMatrix & aXts, const int aPeriod=-1 );
+Rcpp::NumericMatrix ConvertBars( const Rcpp::NumericMatrix & aXts, const int aPeriod = -1 );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]

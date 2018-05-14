@@ -76,6 +76,7 @@ TPrice PnLsToMoneyResult( const TPriceSeries & aPnl, const bool aUseVolume = fal
 TPrice PnLsToMoneyStatValue( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30 );
 TPrice PnLsToMoneyStatValueGost( const TPriceSeries & aPnl, const bool aUseVolume = false );
 TPrice PnLsToMoneyMonteCarlo( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30, const size_t aSamples=1000 );
+TPrice PnLsToMoneyMonteCarloQuantile( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30, const size_t aSamples=1000, const double aQuantile=0.05 );
 
 TPriceSeries ReductionOfTheIncome(
     const TPriceSeries & aPnL,

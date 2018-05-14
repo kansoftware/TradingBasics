@@ -129,12 +129,12 @@ double DealsToPnLValue( const Rcpp::DataFrame & aDeals, const SEXP & aParams ) {
 double DealsToStatValue( const Rcpp::DataFrame & aDeals, const SEXP & aParams ) {
     const Rcpp::List lParam( aParams );
     double lFirstPrice = Rcpp::as<double>( lParam["FirstPrice"] );
-//    double lMinDeals = Rcpp::as<double>( lParam["MinDeals"] );
+    const size_t N = Rcpp::as<size_t>( lParam["N"] ) ;
 
     const TDeals lDeals( DataFrameToDeals( aDeals, lFirstPrice ) );
     const TPriceSeries lPns(DealsToPnLs( lDeals ));
     
-    return PnLsToMoneyStatValue(lPns);
+    return PnLsToMoneyStatValue(lPns,false,N);
 }
 
 //------------------------------------------------------------------------------------------
@@ -143,11 +143,12 @@ double DealsToMonteCarloValue( const Rcpp::DataFrame & aDeals, const SEXP & aPar
     double lFirstPrice = Rcpp::as<double>( lParam["FirstPrice"] );
     const size_t N = Rcpp::as<size_t>( lParam["N"] ) ;
     const size_t aSamples = Rcpp::as<size_t>( lParam["Samples"] ) ;
+    double lQuantile = Rcpp::as<double>( lParam["Quantile"] );
     
     const TDeals lDeals( DataFrameToDeals( aDeals, lFirstPrice ) );
     const TPriceSeries lPns(DealsToPnLs( lDeals ));
     
-    return PnLsToMoneyMonteCarlo(lPns,false,N,aSamples);    
+    return PnLsToMoneyMonteCarloQuantile(lPns,false,N,aSamples,lQuantile);    
 }
 
 //------------------------------------------------------------------------------------------

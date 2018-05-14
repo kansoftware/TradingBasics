@@ -12,6 +12,7 @@
 #include <map>
 #include <list>
 #include <vector>
+#include <set>
 #include <cassert>
 #include <cmath>
 #include <algorithm>
@@ -201,7 +202,7 @@ const double gStudentCV[100] = { //The table values are critical values of the t
     0.395581159439759,
     0.387753752860166,
     0.380378330721873,
-    0.373400724869855,
+    0.373400724869855,//n=30
     0.366807908329282,
     0.360536070057491,
     0.354578777416161,
@@ -357,6 +358,38 @@ TPrice PnLsToMoneyMonteCarlo( const TPriceSeries & aPnl, const bool aUseVolume, 
     }
     
     return lResult * ToDouble(lSize);
+}
+
+//------------------------------------------------------------------------------------------
+TPrice PnLsToMoneyMonteCarloQuantile( const TPriceSeries & aPnl, const bool aUseVolume, const size_t N, const size_t aSamples, const double aQuantile ) {
+    const size_t lSize = aPnl.size();
+    if( lSize < 2 or N < 2 or IsGreat( aQuantile, 1.0 ) ) {
+        return 0.0;
+    }
+    
+    srand( time(NULL) );
+    std::multiset<TPrice> lData;
+    
+    for( size_t i=0; i<aSamples; ++i ){
+        TPrice lPnlTest = 0.0;
+        for( size_t j=0; j<N; ++j ){
+            const size_t lID = rand() % lSize;
+            const TPrice lPnlSample = aPnl[lID].Price * (aUseVolume ? aPnl[lID].Volume : 1.0);
+            lPnlTest += lPnlSample;
+        }
+        lPnlTest /= N;
+        
+        lData.insert( lPnlTest );
+    }
+    
+    const size_t lID = RoundToSize_t( aQuantile * ToDouble( lSize ) );
+    
+    auto iter = lData.cbegin();
+    std::advance(iter, lID);
+    
+    const TPrice lResult = *iter;
+    
+    return lResult * ToDouble(lSize);    
 }
 
 //------------------------------------------------------------------------------------------
