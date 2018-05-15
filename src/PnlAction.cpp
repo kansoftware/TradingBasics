@@ -6,7 +6,7 @@
  * Author: kan
  * 
  * Created on 2015.11.11
- * @lastupdate 2018.04.28
+ * @lastupdate 2018.05.15
  */
 
 #include <map>
@@ -382,7 +382,7 @@ TPrice PnLsToMoneyMonteCarloQuantile( const TPriceSeries & aPnl, const bool aUse
         lData.insert( lPnlTest );
     }
     
-    const size_t lID = RoundToSize_t( aQuantile * ToDouble( lSize ) );
+    const size_t lID = RoundToSize_t( aQuantile * ToDouble( aSamples ) );
     
     auto iter = lData.cbegin();
     std::advance(iter, lID);
