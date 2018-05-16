@@ -309,7 +309,7 @@ TPrice PnLsToMoneyStatValue( const TPriceSeries & aPnl, const bool aUseVolume, c
 }
 
 //------------------------------------------------------------------------------------------
-TPrice PnLsToMoneyStatValueGost( const TPriceSeries & aPnl, const bool aUseVolume ) {
+TPrice PnLsToMoneyStatValueGost( const TPriceSeries & aPnl, const bool aUseVolume, const size_t N ) {
     const size_t lSize = aPnl.size();
     if( lSize < 2 ) {
         return 0.0;
@@ -332,7 +332,7 @@ TPrice PnLsToMoneyStatValueGost( const TPriceSeries & aPnl, const bool aUseVolum
     
     lstdev /= (ToDouble(lSize) - 1.5);//ГОСТ Р 8.736-2011
     
-    return (mean - sqrt(lstdev))*ToDouble(lSize);
+    return ( mean - sqrt( lstdev ) / sqrt( N ) )*ToDouble(lSize);
 }
 
 //------------------------------------------------------------------------------------------
