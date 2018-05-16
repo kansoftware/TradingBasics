@@ -74,7 +74,7 @@ bool CalcDrawDown(
 
 TPrice PnLsToMoneyResult( const TPriceSeries & aPnl, const bool aUseVolume = false );
 TPrice PnLsToMoneyStatValue( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30 );
-TPrice PnLsToMoneyStatValueGost( const TPriceSeries & aPnl, const bool aUseVolume = false );
+TPrice PnLsToMoneyStatValueGost( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30  );
 TPrice PnLsToMoneyMonteCarlo( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30, const size_t aSamples=1000 );
 TPrice PnLsToMoneyMonteCarloQuantile( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30, const size_t aSamples=1000, const double aQuantile=0.05 );
 
