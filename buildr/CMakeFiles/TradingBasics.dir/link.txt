@@ -1,2 +1,0 @@
-/usr/bin/ar qc libTradingBasics.a  CMakeFiles/TradingBasics.dir/src/BarPeriod.cpp.o CMakeFiles/TradingBasics.dir/src/BasisOfStrategy.cpp.o CMakeFiles/TradingBasics.dir/src/CIndicatorES.cpp.o CMakeFiles/TradingBasics.dir/src/Forecasting.cpp.o CMakeFiles/TradingBasics.dir/src/Indicators.cpp.o CMakeFiles/TradingBasics.dir/src/PnlAction.cpp.o CMakeFiles/TradingBasics.dir/src/PowellsMethod.cpp.o CMakeFiles/TradingBasics.dir/src/Prices.cpp.o CMakeFiles/TradingBasics.dir/src/StringHasher.cpp.o
-/usr/bin/ranlib libTradingBasics.a
