@@ -298,11 +298,11 @@ TPrice PnLsToMoneyStatValue( const TPriceSeries & aPnl, const bool aUseVolume, c
     
     lstdev /= ToDouble(lSize);
     
-    const size_t lStudAN = ( N<102 ) ?
+    const double lStudAN = ( N<102 ) ?
         ( gStudentCV[N-2] ) :
         ( 1.970 //t.975 n is very big
           /
-          sqrt( N )
+          sqrt( ToDouble(N) )
         );
     
     return (mean - sqrt(lstdev)*lStudAN)*ToDouble(lSize);
@@ -332,7 +332,7 @@ TPrice PnLsToMoneyStatValueGost( const TPriceSeries & aPnl, const bool aUseVolum
     
     lstdev /= (ToDouble(lSize) - 1.5);//ГОСТ Р 8.736-2011
     
-    return ( mean - sqrt( lstdev ) / sqrt( N ) )*ToDouble(lSize);
+    return ( mean - sqrt( lstdev ) / sqrt( ToDouble(N) ) )*ToDouble(lSize);
 }
 
 //------------------------------------------------------------------------------------------
@@ -342,8 +342,8 @@ TPrice PnLsToMoneyMonteCarlo( const TPriceSeries & aPnl, const bool aUseVolume, 
         return 0.0;
     }
     
-    srand( time(NULL) );
-    TPrice lResult = ULLONG_MAX; //очень большое число
+    srand( static_cast<unsigned int>(time(NULL)) );
+    TPrice lResult = ToDouble( ULLONG_MAX ); //очень большое число
     
     for( size_t i=0; i<aSamples; ++i ){
         TPrice lPnlTest = 0.0;
@@ -352,7 +352,7 @@ TPrice PnLsToMoneyMonteCarlo( const TPriceSeries & aPnl, const bool aUseVolume, 
             const TPrice lPnlSample = aPnl[lID].Price * (aUseVolume ? aPnl[lID].Volume : 1.0);
             lPnlTest += lPnlSample;
         }
-        lPnlTest /= N;
+        lPnlTest /= ToDouble(N);
         
         lResult = std::min(lResult, lPnlTest);
     }
@@ -367,7 +367,7 @@ TPrice PnLsToMoneyMonteCarloQuantile( const TPriceSeries & aPnl, const bool aUse
         return 0.0;
     }
     
-    srand( time(NULL) );
+    srand( static_cast<unsigned int>(time(NULL)) );
     std::multiset<TPrice> lData;
     
     for( size_t i=0; i<aSamples; ++i ){
@@ -377,7 +377,7 @@ TPrice PnLsToMoneyMonteCarloQuantile( const TPriceSeries & aPnl, const bool aUse
             const TPrice lPnlSample = aPnl[lID].Price * (aUseVolume ? aPnl[lID].Volume : 1.0);
             lPnlTest += lPnlSample;
         }
-        lPnlTest /= N;
+        lPnlTest /= ToDouble(N);
         
         lData.insert( lPnlTest );
     }
