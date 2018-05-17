@@ -122,7 +122,7 @@ double DealsToPnLValue( const Rcpp::DataFrame & aDeals, const SEXP & aParams ) {
 
     const TDeals lDeals( DataFrameToDeals( aDeals, lFirstPrice ) );
 
-    return DealsToPNLCoefficientQuick( lDeals, lFirstPrice, lMinDeals );
+    return DealsToPNLCoefficientQuick( lDeals, lFirstPrice, ToSize_t(lMinDeals) );
 }
 
 //------------------------------------------------------------------------------------------
@@ -157,7 +157,7 @@ Rcpp::List DealsToCoeffUnrealized( const Rcpp::NumericMatrix & aBars, const Rcpp
     const TBarSeries lBars = XtsToBarSeries( aBars );
     
     const Rcpp::List lParam( aParams );
-    const size_t lMinDealsPerDay = Rcpp::as<int>( lParam[ "MinDeals" ] );
+    const double lMinDealsPerDay = Rcpp::as<double>( lParam[ "MinDeals" ] );
     double lBeginLabel = ( Rcpp::as<Rcpp::Datetime>( lParam["BeginLabel"] ) ).getFractionalTimestamp() * gOneDay;
     double lEndLabel = ( Rcpp::as<Rcpp::Datetime>( lParam["EndLabel"] ) ).getFractionalTimestamp() * gOneDay;
     

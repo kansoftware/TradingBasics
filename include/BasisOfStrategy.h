@@ -3,7 +3,7 @@
  * \brief Модуль реализующий объекты для одно-ногих стратегий
  * \author kan <kansoftware.ru>
  * \since 2015-11-11
- * \date 2017-07-21
+ * \date 2018-05-17
  * Модуль используется неизменно в проектах TradeBot и [R] BackTester
  */
 
@@ -14,6 +14,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <functional>
 
 #include "Prices.h"
 #include "BarPeriod.h"
@@ -77,5 +78,7 @@ std::ostream& operator<<( std::ostream &out, const TSimpleTick &aTick );
 TPrice RoundTo( const TPrice aPrice, const TPrice aPriceStep );
 TPrice TruncTo( const TPrice aPrice, const TPrice aPriceStep );
 TPrice CeilTo( const TPrice aPrice, const TPrice aPriceStep );
+
+typedef std::function< TPriceSeries ( const TPriceSeries & aPrices, const int aPeriod ) > TfunMA;
 
 #endif //BACKTESTER_BASISOFSTRATEGY_H
