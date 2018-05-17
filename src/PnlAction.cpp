@@ -342,7 +342,6 @@ TPrice PnLsToMoneyMonteCarlo( const TPriceSeries & aPnl, const bool aUseVolume, 
         return 0.0;
     }
     
-    srand( static_cast<unsigned int>(time(NULL)) );
     TPrice lResult = ToDouble( ULLONG_MAX ); //очень большое число
     
     for( size_t i=0; i<aSamples; ++i ){
@@ -367,7 +366,6 @@ TPrice PnLsToMoneyMonteCarloQuantile( const TPriceSeries & aPnl, const bool aUse
         return 0.0;
     }
     
-    srand( static_cast<unsigned int>(time(NULL)) );
     std::multiset<TPrice> lData;
     
     for( size_t i=0; i<aSamples; ++i ){
