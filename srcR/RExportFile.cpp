@@ -130,11 +130,12 @@ double DealsToStatValue( const Rcpp::DataFrame & aDeals, const SEXP & aParams ) 
     const Rcpp::List lParam( aParams );
     double lFirstPrice = Rcpp::as<double>( lParam["FirstPrice"] );
     const size_t N = Rcpp::as<size_t>( lParam["N"] ) ;
+    double lQuantile = Rcpp::as<double>( lParam["Quantile"] );
 
     const TDeals lDeals( DataFrameToDeals( aDeals, lFirstPrice ) );
     const TPriceSeries lPns(DealsToPnLs( lDeals ));
     
-    return PnLsToMoneyStatValue(lPns,false,N);
+    return PnLsToMoneyStatValue( lPns, false, N, lQuantile );
 }
 
 //------------------------------------------------------------------------------------------
@@ -148,7 +149,7 @@ double DealsToMonteCarloValue( const Rcpp::DataFrame & aDeals, const SEXP & aPar
     const TDeals lDeals( DataFrameToDeals( aDeals, lFirstPrice ) );
     const TPriceSeries lPns(DealsToPnLs( lDeals ));
     
-    return PnLsToMoneyMonteCarloQuantile(lPns,false,N,aSamples,lQuantile);    
+    return PnLsToMoneyMonteCarloQuantile( lPns, false, N, aSamples, lQuantile );    
 }
 
 //------------------------------------------------------------------------------------------

@@ -3,7 +3,7 @@
  * \brief Модуль хранящий в себе типы периодов для баров и основные методы работы с ними
  * \author kan <kansoftware.ru>
  * \since 2015-11-11
- * \date 2018-05-11
+ * \date 2018-05-18
  * Модуль используется неизменно в проектах TradeBot и [R] BackTester
  */
 
@@ -73,7 +73,7 @@ bool CalcDrawDown(
     TInnerDate & aoReturn );
 
 TPrice PnLsToMoneyResult( const TPriceSeries & aPnl, const bool aUseVolume = false );
-TPrice PnLsToMoneyStatValue( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30 );
+TPrice PnLsToMoneyStatValue( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30, const double aQuantile=0.2 );
 TPrice PnLsToMoneyStatValueGost( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30  );
 TPrice PnLsToMoneyMonteCarlo( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30, const size_t aSamples=1000 );
 TPrice PnLsToMoneyMonteCarloQuantile( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30, const size_t aSamples=1000, const double aQuantile=0.05 );
