@@ -26,7 +26,7 @@
 #include "DelphisRound.h"
 #include "Comparers.h"
 
-//#define FULLDATA
+#define FULLDATA
 #ifdef FULLDATA
     #include <iostream>
     #include "Indicators.h"
@@ -164,9 +164,9 @@ TPriceSeries ReductionOfTheIncome(
 }
 
 //------------------------------------------------------------------------------------------
-TPrice PnLsToMoneyResult( const TPriceSeries & aPnl, const bool aUseVolume ) {
-    TPrice lResult = 0;
-    for( const TSimpleTick& lPnl : aPnl ) {
+TPrice PnLsToMoneyResult( const TPriceSeries & aPnls, const bool aUseVolume ) {
+    TPrice lResult = 0.0;
+    for( const TSimpleTick& lPnl : aPnls ) {
         lResult += lPnl.Price * ( aUseVolume ? lPnl.Volume : 1.0 );
     }
     
@@ -486,9 +486,6 @@ TPrice DealsToCoeff(
     #endif
     
     for( auto it=aDeals.begin(); it!=aDeals.end(); ++it ) {
-        #ifdef FULLDATA
-        std::cout << *it << std::endl;
-        #endif
         
         const TInnerDate lOpenTime = it->OpenTime;
         const TInnerDate lCloseTime = it->CloseTime;
@@ -650,6 +647,72 @@ bool IsGrows( const TPriceSeries & aDailyPnls, const size_t aPeriod, const size_
     }
     
     return true;
+}
+
+//------------------------------------------------------------------------------------------
+TPriceSeries PnLsAmplifier( const TPriceSeries &aPnl, const std::vector<double> &aAmplifiers ) {
+    
+//    std::cout << "PnLsAmplifier=" << aAmplifiers.size() << std::endl;
+    if( aAmplifiers.size() < 2UL ){
+        return aPnl;
+    }
+    
+    //sort deals
+    TPriceSeries lPnls( aPnl );
+    std::sort( lPnls.begin(), lPnls.end(),
+        []( const TSimpleTick& lh, const TSimpleTick& rh ){
+            return IsLess( lh.DateTime, rh.DateTime );
+        }
+    );
+    
+    //days range detect
+    const TInnerDate lMinDate = trunc( lPnls.begin()->DateTime / gOneDay );
+    const TInnerDate lMaxDate = trunc( lPnls.rbegin()->DateTime / gOneDay );
+    
+//    std::cout << CeilToSize_t(lMaxDate-lMinDate) << "<" <<  aAmplifiers.size() << std::endl;
+    if( CeilToSize_t(lMaxDate-lMinDate) < aAmplifiers.size() ){
+        return aPnl;
+    }
+    
+    //for each range ...
+    const double lMinDelta = trunc( (lMaxDate-lMinDate) / ToDouble( aAmplifiers.size() ) );
+//    std::cout << "lMinDelta=" << lMinDelta << std::endl;
+    if( IsLess( lMinDelta, 1.0 ) ){
+        return aPnl;
+    }
+    
+    //... add deals
+    std::vector<TInnerDate> ldates( aAmplifiers.size() );
+    for( size_t i=0; i<aAmplifiers.size(); ++i ) {
+        ldates[i] = lMinDate + lMinDelta * ToDouble(i+1) ;
+    }
+//    (*ldates.rbegin()) = lMaxDate;
+//    std::cout << ldates.size() << std::endl;
+    
+    TPriceSeries lPnls_result;
+    lPnls_result.reserve( ToSize_t(*aAmplifiers.rbegin()) * aPnl.size() );
+    for( auto it = lPnls.begin(); it != lPnls.end(); ++it ){
+        const TSimpleTick lTick( *it );
+        
+//        std::cout << "=\t" <<lTick ;
+        
+        for( size_t i=0; i < ldates.size(); ++i ){
+//            std::cout << "\t" <<ldates[i] ;
+            if( not IsGreat( trunc(lTick.DateTime / gOneDay), ldates[i] ) ){
+                
+                for( size_t j=0; j < ToSize_t(aAmplifiers[i]); ++j ){
+                    lPnls_result.push_back( lTick );
+//                    std::cout << "+" ;
+                }
+                
+                break;
+            }
+        }
+//        std::cout << std::endl;
+    }
+    
+    lPnls_result.shrink_to_fit();
+    return lPnls_result;
 }
 
 //------------------------------------------------------------------------------------------

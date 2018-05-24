@@ -35,7 +35,7 @@ typedef double TInnerDate;
 
 const double gOneDay = 86400.0;
 const double gOneHour = 3600.0;
-const double gStartingTime = 975888000;
+const double gStartingTime = 975888000;//GMT: Mon, 04 Dec 2000 00:00:00 GMT
 
 struct TSimpleTick {
     TInnerDate DateTime=gStartingTime;
