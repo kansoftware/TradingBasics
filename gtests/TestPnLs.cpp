@@ -51,8 +51,8 @@ TEST( PnLs, PnlsToDaily ) {
 TEST( PnLs, PnLsAmplifier ) {
 
     const TPriceSeries lPnLs( GetSimplePnl() );
-    const TPriceSeries lPnLs_amp( PnLsAmplifier( lPnLs, {1,2,4} ) );
     
+    const TPriceSeries lPnLs_amp( PnLsAmplifier( lPnLs, {1,2,4} ) );
     EXPECT_EQ( lPnLs_amp.size(), 22 );
     EXPECT_GE( lPnLs_amp.size(), lPnLs.size() );
     EXPECT_EQ( lPnLs_amp.front().Price, lPnLs.front().Price );
@@ -60,7 +60,6 @@ TEST( PnLs, PnLsAmplifier ) {
     
     
     const TPriceSeries lPnLs_amp2( PnLsAmplifier( lPnLs, {1,2,4}, gStartingTime, gStartingTime + gOneDay * 10.0 ) );
-    
     EXPECT_EQ( lPnLs_amp2.size(), 22 );
     EXPECT_GE( lPnLs_amp2.size(), lPnLs.size() );
     EXPECT_EQ( lPnLs_amp2.front().Price, lPnLs.front().Price );
@@ -68,13 +67,18 @@ TEST( PnLs, PnLsAmplifier ) {
     
     
     const TPriceSeries lPnLs_amp3( PnLsAmplifier( lPnLs, {1,2,4}, gStartingTime - gOneDay * 3.0, gStartingTime + gOneDay * 14.0 ) );
-    
     EXPECT_EQ( lPnLs_amp3.size(), 21 );
     EXPECT_GE( lPnLs_amp3.size(), lPnLs.size() );
     EXPECT_EQ( lPnLs_amp3.front().Price, lPnLs.front().Price );
     EXPECT_EQ( lPnLs_amp3.back().Price, lPnLs.back().Price );
     
-//    for( const TSimpleTick& lTick : lPnLs_amp3 ){
+    
+    const TPriceSeries lPnLs_amp4( PnLsAmplifier( lPnLs, {1,1,1} ) );
+    EXPECT_EQ( lPnLs_amp4.size(), lPnLs.size() );
+    EXPECT_EQ( lPnLs_amp4.front().Price, lPnLs.front().Price );
+    EXPECT_EQ( lPnLs_amp4.back().Price, lPnLs.back().Price );
+    
+//    for( const TSimpleTick& lTick : lPnLs_amp4 ){
 //        std::cout << lTick << std::endl;
 //    }
 }
