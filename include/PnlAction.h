@@ -3,7 +3,7 @@
  * \brief Модуль хранящий в себе типы периодов для баров и основные методы работы с ними
  * \author kan <kansoftware.ru>
  * \since 2015-11-11
- * \date 2018-05-24
+ * \date 2018-05-25
  * Модуль используется неизменно в проектах TradeBot и [R] BackTester
  */
 
@@ -78,7 +78,7 @@ TPrice PnLsToMoneyStatValueGost( const TPriceSeries & aPnl, const bool aUseVolum
 TPrice PnLsToMoneyMonteCarlo( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30, const size_t aSamples=1000 );
 TPrice PnLsToMoneyMonteCarloQuantile( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30, const size_t aSamples=1000, const double aQuantile=0.05 );
 
-TPriceSeries PnLsAmplifier( const TPriceSeries &aPnl, const std::vector<double> &aAmplifiers );
+TPriceSeries PnLsAmplifier( const TPriceSeries &aPnl, const std::vector<double> &aAmplifiers, const TInnerDate aBegin=-1.0, const TInnerDate aEnd=-1.0 );
 
 TPriceSeries ReductionOfTheIncome(
     const TPriceSeries & aPnL,

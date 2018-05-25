@@ -650,9 +650,8 @@ bool IsGrows( const TPriceSeries & aDailyPnls, const size_t aPeriod, const size_
 }
 
 //------------------------------------------------------------------------------------------
-TPriceSeries PnLsAmplifier( const TPriceSeries &aPnl, const std::vector<double> &aAmplifiers ) {
+TPriceSeries PnLsAmplifier( const TPriceSeries &aPnl, const std::vector<double> &aAmplifiers, const TInnerDate aBegin, const TInnerDate aEnd ) {
     
-//    std::cout << "PnLsAmplifier=" << aAmplifiers.size() << std::endl;
     if( aAmplifiers.size() < 2UL ){
         return aPnl;
     }
@@ -666,17 +665,15 @@ TPriceSeries PnLsAmplifier( const TPriceSeries &aPnl, const std::vector<double> 
     );
     
     //days range detect
-    const TInnerDate lMinDate = trunc( lPnls.begin()->DateTime / gOneDay );
-    const TInnerDate lMaxDate = trunc( lPnls.rbegin()->DateTime / gOneDay );
+    const TInnerDate lMinDate =  trunc( (isPositiveValue( aBegin ) ? aBegin : lPnls.begin()->DateTime) / gOneDay );
+    const TInnerDate lMaxDate =  trunc( (isPositiveValue( aEnd ) ? aEnd : lPnls.rbegin()->DateTime) / gOneDay );
     
-//    std::cout << CeilToSize_t(lMaxDate-lMinDate) << "<" <<  aAmplifiers.size() << std::endl;
     if( CeilToSize_t(lMaxDate-lMinDate) < aAmplifiers.size() ){
         return aPnl;
     }
     
     //for each range ...
     const double lMinDelta = trunc( (lMaxDate-lMinDate) / ToDouble( aAmplifiers.size() ) );
-//    std::cout << "lMinDelta=" << lMinDelta << std::endl;
     if( IsLess( lMinDelta, 1.0 ) ){
         return aPnl;
     }
@@ -686,29 +683,20 @@ TPriceSeries PnLsAmplifier( const TPriceSeries &aPnl, const std::vector<double> 
     for( size_t i=0; i<aAmplifiers.size(); ++i ) {
         ldates[i] = lMinDate + lMinDelta * ToDouble(i+1) ;
     }
-//    (*ldates.rbegin()) = lMaxDate;
-//    std::cout << ldates.size() << std::endl;
     
     TPriceSeries lPnls_result;
     lPnls_result.reserve( ToSize_t(*aAmplifiers.rbegin()) * aPnl.size() );
     for( auto it = lPnls.begin(); it != lPnls.end(); ++it ){
         const TSimpleTick lTick( *it );
         
-//        std::cout << "=\t" <<lTick ;
-        
         for( size_t i=0; i < ldates.size(); ++i ){
-//            std::cout << "\t" <<ldates[i] ;
             if( not IsGreat( trunc(lTick.DateTime / gOneDay), ldates[i] ) ){
-                
                 for( size_t j=0; j < ToSize_t(aAmplifiers[i]); ++j ){
                     lPnls_result.push_back( lTick );
-//                    std::cout << "+" ;
                 }
-                
                 break;
             }
         }
-//        std::cout << std::endl;
     }
     
     lPnls_result.shrink_to_fit();
