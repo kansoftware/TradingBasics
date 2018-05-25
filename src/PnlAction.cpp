@@ -26,7 +26,7 @@
 #include "DelphisRound.h"
 #include "Comparers.h"
 
-#define FULLDATA
+//#define FULLDATA
 #ifdef FULLDATA
     #include <iostream>
     #include "Indicators.h"
@@ -672,13 +672,11 @@ TPriceSeries PnLsAmplifier( const TPriceSeries &aPnl, const std::vector<double> 
         return aPnl;
     }
     
-    //for each range ...
     const double lMinDelta = trunc( (lMaxDate-lMinDate) / ToDouble( aAmplifiers.size() ) );
     if( IsLess( lMinDelta, 1.0 ) ){
         return aPnl;
     }
     
-    //... add deals
     std::vector<TInnerDate> ldates( aAmplifiers.size() );
     for( size_t i=0; i<aAmplifiers.size(); ++i ) {
         ldates[i] = lMinDate + lMinDelta * ToDouble(i+1) ;
