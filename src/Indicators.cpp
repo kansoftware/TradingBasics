@@ -781,7 +781,6 @@ TPriceSeries _IntradayParabolicSar( const TBarSeries & aBars, const double aAf, 
 }
 
 //------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------
 TPriceSeries _AbsoluteZigZag( const TBarSeries & aBars, const double aGap ) {
     
     if( not isPositiveValue( aGap )  ) {
@@ -850,3 +849,32 @@ TPriceSeries _AbsoluteZigZag( const TBarSeries & aBars, const double aGap ) {
     
     return lResult;
 }
+
+//------------------------------------------------------------------------------------------
+TPriceSeries _Stochastic( const TBarSeries & aBars, const int aPeriod ){
+    TPriceSeries lMin;
+    TPriceSeries lMax;
+    
+    const size_t lDataSize = aBars.size();
+    const size_t lPeriod = ToSize_t( aPeriod );
+    TPriceSeries lResult( lDataSize );
+    
+    if( _RollMinMax( aBars, aPeriod, lMin, lMax ) ) {
+        
+        for( size_t i=0; i<lPeriod; ++i ){
+            lResult[i].Price = GetBadPrice();
+            lResult[i].DateTime = aBars[i].DateTime;
+            lResult[i].Volume = 0.0;
+        }
+        
+        for( size_t i = lPeriod; i < lDataSize; ++i ){
+            lResult[i].Price = 100.0 * ( aBars[i].Close - lMin[i].Price ) / (lMax[i].Price - lMin[i].Price);
+            lResult[i].DateTime = aBars[i].DateTime;
+            lResult[i].Volume = 1.0;
+        }
+    }
+    
+    return lResult;
+}
+
+//------------------------------------------------------------------------------------------

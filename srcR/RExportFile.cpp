@@ -241,7 +241,7 @@ Rcpp::NumericVector SAR( const Rcpp::NumericMatrix & aOHLCV, const double aAccFa
 //------------------------------------------------------------------------------------------
 Rcpp::NumericVector ZigZag( const Rcpp::NumericMatrix & aOHLCV, const double aGap ) {
     const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
-    const TPriceSeries lResult( _ZigZag(  lBars,  aGap ) );
+    const TPriceSeries lResult( _ZigZag( lBars, aGap ) );
     
     const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
     return PriceSeriesToXts( lResult, lTZone );
@@ -250,7 +250,16 @@ Rcpp::NumericVector ZigZag( const Rcpp::NumericMatrix & aOHLCV, const double aGa
 //------------------------------------------------------------------------------------------
 Rcpp::NumericVector AbsoluteZigZag( const Rcpp::NumericMatrix & aOHLCV, const double aGap ) {
     const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
-    const TPriceSeries lResult( _AbsoluteZigZag(  lBars,  aGap ) );
+    const TPriceSeries lResult( _AbsoluteZigZag( lBars, aGap ) );
+    
+    const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
+    return PriceSeriesToXts( lResult, lTZone );
+}
+
+//------------------------------------------------------------------------------------------
+Rcpp::NumericVector Stochastic( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod ) {
+    const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
+    const TPriceSeries lResult( _Stochastic( lBars, aPeriod ) );
     
     const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
     return PriceSeriesToXts( lResult, lTZone );
