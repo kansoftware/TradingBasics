@@ -3,7 +3,7 @@
  * \brief Модуль реализующий индикаторы для одноногих стратегий
  * \author kan <kansoftware.ru>
  * \since 2015-11-10
- * \date 2018-07-19
+ * \date 2018-07-20
  * Модуль используется неизменно в проектах TradeBot и [R] BackTester
  */
 
@@ -25,6 +25,8 @@ bool _DI( const TBarSeries & aBars, const int aPeriod,
             TPriceSeries & aoDMIp, 
             TPriceSeries & aoDMIn );
 
+TPriceSeries _ADX( const TBarSeries & aBars, const int aPeriod );
+
 TPriceSeries _SimpleMA( const TPriceSeries & aPrices, const int aPeriod, const size_t aLag = 0 );
 TPriceSeries _ExponentMA( const TPriceSeries & aPrices, const int aPeriod, const size_t aLag = 0 );
 TPriceSeries _SmoothedMA( const TPriceSeries & aPrices, const int aPeriod, const size_t aLag = 0 );
@@ -45,6 +47,8 @@ bool _Forecasting( const TPriceSeries & aPrices, const size_t aForecastPeriod, c
 bool _RollMinMax( const TBarSeries & aBars, const int aPeriod, 
             TPriceSeries & aoMin, 
             TPriceSeries & aoMax );
+
+TPriceSeries _ChannelSize( const TBarSeries & aBars, const int aPeriod );
 
 TPriceSeries _Stochastic( const TBarSeries & aBars, const int aPeriod );
 

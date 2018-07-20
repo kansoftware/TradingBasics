@@ -71,11 +71,19 @@ Rcpp::List RollMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
+Rcpp::NumericVector ChannelSize( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod );
+//------------------------------------------------------------------------------------------
+
+// [[Rcpp::export]]
 Rcpp::NumericMatrix ConvertBars( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod = -1 );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
 Rcpp::NumericVector Stochastic( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod );
+//------------------------------------------------------------------------------------------
+
+// [[Rcpp::export]]
+Rcpp::NumericVector ADX( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
