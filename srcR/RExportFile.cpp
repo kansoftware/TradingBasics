@@ -281,7 +281,43 @@ Rcpp::NumericVector ADX( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod )
     
     const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
     return PriceSeriesToXts( lResult, lTZone );
-};
+}
+
+//------------------------------------------------------------------------------------------
+Rcpp::NumericMatrix BollingerBands( const Rcpp::NumericMatrix & aXts, const int aPeriod, const double aSigma, const int aType ) {
+    const TMAPoint lMAPoint = static_cast< TMAPoint >( aType );
+    std::string lTZone;
+    const TPriceSeries lPrices( XtsToPriceSeries( aXts, lMAPoint, lTZone ) );
+    
+    TPriceSeries lMin;
+    TPriceSeries lMean;
+    TPriceSeries lMax;
+    
+    const bool lRes( _BollingerBands(lPrices, aPeriod, aSigma, lMin,lMean,lMax) );
+    
+    Rcpp::NumericMatrix lResult( lPrices.size(), 3 );
+    Rcpp::NumericVector lIndex( lPrices.size() );
+    for( size_t i=0; i < lPrices.size(); ++i ) {
+        lResult( i, 0 ) = IsEqual( lMin[ i ].Price, GetBadPrice() ) ? NA_REAL : lMin[ i ].Price ;
+        lResult( i, 1 ) = IsEqual( lMean[ i ].Price, GetBadPrice() ) ? NA_REAL : lMean[ i ].Price ;
+        lResult( i, 2 ) = IsEqual( lMax[ i ].Price, GetBadPrice() ) ? NA_REAL : lMax[ i ].Price ;
+        lIndex[ i ] = lPrices[ i ].DateTime;
+    }
+    
+    lIndex.attr("tzone") = aXts.attr("tzone");// "Europe/Moscow"; // the index has attributes
+    lIndex.attr("tclass") = "POSIXct";
+    lResult.attr("dim") = Rcpp::IntegerVector::create( lPrices.size(), 3 );
+    lResult.attr("index") = lIndex;
+    Rcpp::CharacterVector klass = Rcpp::CharacterVector::create( "xts", "zoo" );
+    lResult.attr("class") = klass;
+    lResult.attr(".indexCLASS") = "POSIXct";
+    lResult.attr("tclass") = "POSIXct";
+    lResult.attr(".indexTZ") = aXts.attr("tzone"); //"Europe/Moscow";
+    lResult.attr("tzone") = aXts.attr("tzone"); //"Europe/Moscow";
+    colnames( lResult ) = Rcpp::CharacterVector::create( "Min", "Mean", "Max" );
+    
+    return lResult;
+}
 
 //------------------------------------------------------------------------------------------
 Rcpp::NumericMatrix ConvertBars( const Rcpp::NumericMatrix & aXts, const int aPeriod ) {
@@ -298,10 +334,10 @@ Rcpp::NumericMatrix ConvertBars( const Rcpp::NumericMatrix & aXts, const int aPe
     Rcpp::NumericMatrix lResult( lNewBars.size(), 5 );
     Rcpp::NumericVector lIndex( lNewBars.size() );
     for( size_t i=0; i < lNewBars.size(); ++i ) {
-        lResult( i, 0 ) = lNewBars[ i ].Open;
-        lResult( i, 1 ) = lNewBars[ i ].High;
-        lResult( i, 2 ) = lNewBars[ i ].Low;
-        lResult( i, 3 ) = lNewBars[ i ].Close;
+        lResult( i, 0 ) = IsEqual( lNewBars[ i ].Open, GetBadPrice() ) ? NA_REAL : lNewBars[ i ].Open ;
+        lResult( i, 1 ) = IsEqual( lNewBars[ i ].High, GetBadPrice() ) ? NA_REAL : lNewBars[ i ].High ;
+        lResult( i, 2 ) = IsEqual( lNewBars[ i ].Low, GetBadPrice() ) ? NA_REAL : lNewBars[ i ].Low ;
+        lResult( i, 3 ) = IsEqual( lNewBars[ i ].Close, GetBadPrice() ) ? NA_REAL : lNewBars[ i ].Close ;
         lResult( i, 4 ) = lNewBars[ i ].Volume;
         lIndex[ i ] = lNewBars[ i ].DateTime;
     }

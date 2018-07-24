@@ -932,3 +932,38 @@ TPriceSeries _ChannelSize( const TBarSeries & aBars, const int aPeriod ) {
 }
 
 //------------------------------------------------------------------------------------------
+bool _BollingerBands( 
+    const TPriceSeries & aPrices, 
+    const int aPeriod, 
+    const double aSigma,
+    TPriceSeries & aoMin,
+    TPriceSeries & aoMean,
+    TPriceSeries & aoMax ) {
+    
+    if( aPrices.size() <= ToSize_t(aPeriod) ){
+        return false;
+    }
+    
+    TPriceSeries lSMA( _SimpleMA( aPrices, aPeriod, 0 ) );
+    aoMean.swap( lSMA );
+    
+    aoMin=aoMean;
+    aoMax=aoMean;
+    
+    for( size_t i = aPeriod; i < aPrices.size(); ++i ){
+        TPrice lstdev = 0.0;
+        for( size_t j = (i-aPeriod); j < i; ++j ){
+            lstdev += pow(aPrices[j].Price - aoMean[i-1].Price, 2);
+        }
+        
+        lstdev /= ToDouble(aPeriod);
+        const TPrice lSigma = sqrt(lstdev);
+      
+        aoMin[i-1].Price -=  lSigma * aSigma;
+        aoMax[i-1].Price +=  lSigma * aSigma;
+    }
+    
+    return true;
+}
+
+//------------------------------------------------------------------------------------------

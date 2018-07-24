@@ -87,6 +87,10 @@ Rcpp::NumericVector ADX( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod )
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
+Rcpp::NumericMatrix BollingerBands( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod, const double aSigma=2.0, const int aType=6 );
+//------------------------------------------------------------------------------------------
+
+// [[Rcpp::export]]
 bool SaveData( const Rcpp::NumericMatrix & aOHLCV, const SEXP & aFileName );
 //------------------------------------------------------------------------------------------
 
