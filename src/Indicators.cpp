@@ -890,14 +890,15 @@ TPriceSeries _Stochastic( const TBarSeries & aBars, const int aPeriod ){
     
     if( _RollMinMax( aBars, aPeriod, lMin, lMax ) ) {
         
-        for( size_t i=0; i<lPeriod; ++i ){
+        for( size_t i=0; i<lPeriod; ++i ) {
             lResult[i].Price = GetBadPrice();
             lResult[i].DateTime = aBars[i].DateTime;
             lResult[i].Volume = 0.0;
         }
         
-        for( size_t i = lPeriod; i < lDataSize; ++i ){
-            lResult[i].Price = 100.0 * ( aBars[i].Close - lMin[i].Price ) / (lMax[i].Price - lMin[i].Price);
+        for( size_t i = lPeriod; i < lDataSize; ++i ) {
+            const TPrice lRange = (lMax[i].Price - lMin[i].Price);
+            lResult[i].Price =  isZero(lRange)? 50.0 : (100.0 * ( aBars[i].Close - lMin[i].Price ) / lRange);
             lResult[i].DateTime = aBars[i].DateTime;
             lResult[i].Volume = 1.0;
         }
@@ -950,7 +951,7 @@ bool _BollingerBands(
     aoMin=aoMean;
     aoMax=aoMean;
     
-    for( size_t i = aPeriod; i < aPrices.size(); ++i ){
+    for( size_t i = aPeriod; i <= aPrices.size(); ++i ){
         TPrice lstdev = 0.0;
         for( size_t j = (i-aPeriod); j < i; ++j ){
             lstdev += pow(aPrices[j].Price - aoMean[i-1].Price, 2);
