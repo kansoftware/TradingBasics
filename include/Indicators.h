@@ -48,6 +48,10 @@ bool _RollMinMax( const TBarSeries & aBars, const int aPeriod,
             TPriceSeries & aoMin, 
             TPriceSeries & aoMax );
 
+bool _ForwardMinMax( const TBarSeries & aBars, const size_t aTimeDelta,
+            TPriceSeries & aoMin, 
+            TPriceSeries & aoMax );
+
 bool _BollingerBands( const TPriceSeries & aPrices, const int aPeriod, const double aSigma,
     TPriceSeries & aoMin,
     TPriceSeries & aoMean,

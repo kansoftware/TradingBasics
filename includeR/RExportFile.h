@@ -71,6 +71,10 @@ Rcpp::List RollMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
+Rcpp::List ForwardMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aTimeDelta );
+//------------------------------------------------------------------------------------------
+
+// [[Rcpp::export]]
 Rcpp::NumericVector ChannelSize( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod );
 //------------------------------------------------------------------------------------------
 

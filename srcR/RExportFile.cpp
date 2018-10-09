@@ -203,15 +203,41 @@ Rcpp::List DI( const Rcpp::NumericMatrix &aXts, const int aPeriod ) {
 }
 
 //------------------------------------------------------------------------------------------
-Rcpp::List RollMinMax( const Rcpp::NumericMatrix & aXts, const int aPeriod ) {
-    const TBarSeries lBars( XtsToBarSeries( aXts ) );
+Rcpp::List RollMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod ) {
+    const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
 
     TPriceSeries lMin;
     TPriceSeries lMax;
 
     if( _RollMinMax( lBars, aPeriod, lMin, lMax ) ) {
 
-        const std::string lTZone( Rcpp::as< std::string >( aXts.attr("tzone") ) );
+        const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
+        ///\todo заменить плохие значения на NA
+        return Rcpp::List::create(
+            Rcpp::Named("Min") = PriceSeriesToXts( lMin, lTZone ),
+            Rcpp::Named("Max") = PriceSeriesToXts( lMax, lTZone )
+        );
+
+    } else {
+        return R_NilValue;
+    }
+}
+
+//------------------------------------------------------------------------------------------
+Rcpp::List ForwardMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aTimeDelta ) {
+
+    if( aTimeDelta < 1 ) {
+        return R_NilValue;
+    }
+    
+    const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
+
+    TPriceSeries lMin;
+    TPriceSeries lMax;
+
+    if( _ForwardMinMax( lBars, static_cast<size_t>(aTimeDelta), lMin, lMax ) ) {
+
+        const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
         ///\todo заменить плохие значения на NA
         return Rcpp::List::create(
             Rcpp::Named("Min") = PriceSeriesToXts( lMin, lTZone ),
