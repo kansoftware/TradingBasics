@@ -658,17 +658,17 @@ bool _ForwardMinMax(
         TPrice lLow = GetBadPrice();
         
         while( j<lDataSize ){
-            if( aBars[j].DateTime > aBars[i].DateTime + ToDouble( aTimeDelta ) ) break;
+            if( aBars[j].DateTime > (aBars[i].DateTime + ToDouble( aTimeDelta )) ) break;
             
             if( not IsValidPrice(lHigh) ){
                 lHigh = aBars[j].High;
                 lLow = aBars[j].Low;
             } else {
                 lHigh = std::max(aBars[j].High, lHigh);
-                lLow = std::max(aBars[j].Low, lLow);
+                lLow = std::min(aBars[j].Low, lLow);
             }
             
-            j++;
+            ++j;
         }
         
         TSimpleTick lTick {
