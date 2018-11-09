@@ -281,6 +281,35 @@ bool _DI( const TBarSeries &aBars, const int aPeriod, TPriceSeries &aoDMIp, TPri
 }
 
 //------------------------------------------------------------------------------------------
+TPriceSeries _ADX( const TBarSeries & aBars, const int aPeriod ) {
+    TPriceSeries lDMIp;
+    TPriceSeries lDMIn;
+    if( not _DI( aBars, aPeriod, lDMIp, lDMIn )) {
+        return TPriceSeries();
+    }
+    
+    TPriceSeries lDX( aBars.size() );
+    for( size_t i = 0; i < ToSize_t(aPeriod); ++i ){
+        lDX[i].DateTime = aBars[i].DateTime;
+        lDX[i].Price = GetBadPrice();
+        lDX[i].Volume = 0.0;
+    }
+    
+    // DX = [ 100 * ABS( (+DI) - (-DI) ) ] / ( (+DI) + (-DI) )
+    for( size_t i = ToSize_t(aPeriod); i < aBars.size(); ++i ){
+        lDX[i].DateTime = aBars[i].DateTime;
+        lDX[i].Volume = 1.0;
+        
+        lDX[i].Price = std::fabs( 100.0 * ( lDMIp[i].Price - lDMIn[i].Price ) ) / ( lDMIp[i].Price + lDMIn[i].Price );
+    }
+    
+     //ADXi = [(ADX(i-1) * (n - 1)) + DXi] / n where n = Smoothing Period
+    const TPriceSeries lADX( _SmoothedMA( lDX, aPeriod, aPeriod ));
+    
+    return lADX;
+}
+
+//------------------------------------------------------------------------------------------
 TPriceSeries _ParabolicSar( const TBarSeries & aBars, const double aAf, const double aMaxAf ) {
 
     TPriceSeries lResult( aBars.size() );
@@ -608,6 +637,66 @@ bool _RollMinMax(
 }
 
 //------------------------------------------------------------------------------------------
+bool _ForwardMinMax( 
+    const TBarSeries & aBars, 
+    const size_t aTimeDelta,
+    TPriceSeries & aoMin, 
+    TPriceSeries & aoMax ) {
+    
+    const size_t lDataSize = aBars.size();
+    if( lDataSize < 5 ) {
+        return false;
+    }
+    
+    aoMin.resize( lDataSize );
+    aoMax.resize( lDataSize );
+    
+    for( size_t i=0; i<lDataSize-1; ++i ){
+        
+        size_t j = i+1;
+        TPrice lHigh = GetBadPrice();
+        TPrice lLow = GetBadPrice();
+        
+        while( j<lDataSize ){
+            if( aBars[j].DateTime > (aBars[i].DateTime + ToDouble( aTimeDelta )) ) break;
+            
+            if( not IsValidPrice(lHigh) ){
+                lHigh = aBars[j].High;
+                lLow = aBars[j].Low;
+            } else {
+                lHigh = std::max(aBars[j].High, lHigh);
+                lLow = std::min(aBars[j].Low, lLow);
+            }
+            
+            ++j;
+        }
+        
+        TSimpleTick lTick {
+            aBars[ i ].DateTime,
+            lLow,
+            1.0
+        };
+        
+        aoMin[ i ] = lTick;
+        
+        lTick.Price = lHigh;
+        aoMax[ i ] = lTick;
+    }
+    
+    
+    size_t i = lDataSize-1;
+    TSimpleTick lTick {
+        aBars[ i ].DateTime,
+        GetBadPrice(),
+        0.0
+    };
+    aoMin[ i ] = lTick;
+    aoMax[ i ] = lTick;
+    
+    return true;
+}
+
+//------------------------------------------------------------------------------------------
 TPriceSeries _KAMA( 
     const TPriceSeries & aPrices, 
     const int aPeriod, 
@@ -781,7 +870,6 @@ TPriceSeries _IntradayParabolicSar( const TBarSeries & aBars, const double aAf, 
 }
 
 //------------------------------------------------------------------------------------------
-//------------------------------------------------------------------------------------------
 TPriceSeries _AbsoluteZigZag( const TBarSeries & aBars, const double aGap ) {
     
     if( not isPositiveValue( aGap )  ) {
@@ -850,3 +938,93 @@ TPriceSeries _AbsoluteZigZag( const TBarSeries & aBars, const double aGap ) {
     
     return lResult;
 }
+
+//------------------------------------------------------------------------------------------
+TPriceSeries _Stochastic( const TBarSeries & aBars, const int aPeriod ){
+    TPriceSeries lMin;
+    TPriceSeries lMax;
+    
+    const size_t lDataSize = aBars.size();
+    const size_t lPeriod = ToSize_t( aPeriod );
+    TPriceSeries lResult( lDataSize );
+    
+    if( _RollMinMax( aBars, aPeriod, lMin, lMax ) ) {
+        
+        for( size_t i=0; i<lPeriod; ++i ) {
+            lResult[i].Price = GetBadPrice();
+            lResult[i].DateTime = aBars[i].DateTime;
+            lResult[i].Volume = 0.0;
+        }
+        
+        for( size_t i = lPeriod; i < lDataSize; ++i ) {
+            const TPrice lRange = (lMax[i].Price - lMin[i].Price);
+            lResult[i].Price =  isZero(lRange)? 50.0 : (100.0 * ( aBars[i].Close - lMin[i].Price ) / lRange);
+            lResult[i].DateTime = aBars[i].DateTime;
+            lResult[i].Volume = 1.0;
+        }
+    }
+    
+    return lResult;
+}
+
+//------------------------------------------------------------------------------------------
+TPriceSeries _ChannelSize( const TBarSeries & aBars, const int aPeriod ) {
+    TPriceSeries lMin;
+    TPriceSeries lMax;
+    
+    if( not _RollMinMax( aBars, aPeriod, lMin, lMax )) {
+        return TPriceSeries();
+    }
+    
+    TPriceSeries lResult( aBars.size() );
+    for( size_t i = 0; i < ToSize_t(aPeriod); ++i ){
+        lResult[i].DateTime = aBars[i].DateTime;
+        lResult[i].Price = GetBadPrice();
+        lResult[i].Volume = 0.0;
+    }
+    
+    for( size_t i = ToSize_t(aPeriod); i < aBars.size(); ++i ){
+        lResult[i].DateTime = aBars[i].DateTime;
+        lResult[i].Volume = 1.0;
+        lResult[i].Price = lMax[i].Price - lMin[i].Price;
+    }
+    
+    return lResult;
+}
+
+//------------------------------------------------------------------------------------------
+bool _BollingerBands( 
+    const TPriceSeries & aPrices, 
+    const int aPeriod, 
+    const double aSigma,
+    TPriceSeries & aoMin,
+    TPriceSeries & aoMean,
+    TPriceSeries & aoMax ) {
+    
+    if( aPrices.size() <= ToSize_t(aPeriod) ){
+        return false;
+    }
+    
+    TPriceSeries lSMA( _SimpleMA( aPrices, aPeriod, 0 ) );
+    aoMean.swap( lSMA );
+    
+    aoMin=aoMean;
+    aoMax=aoMean;
+    
+    for( size_t i = aPeriod; i <= aPrices.size(); ++i ){
+        TPrice lstdev = 0.0;
+        for( size_t j = (i-aPeriod); j < i; ++j ){
+            lstdev += pow(aPrices[j].Price - aoMean[i-1].Price, 2);
+        }
+        
+        lstdev /= ToDouble(aPeriod);
+        const TPrice lSigma = sqrt(lstdev);
+      
+        aoMin[i-1].Price -=  lSigma * aSigma;
+        aoMax[i-1].Price +=  lSigma * aSigma;
+    }
+    
+    return true;
+}
+
+//------------------------------------------------------------------------------------------

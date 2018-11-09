@@ -122,7 +122,7 @@ double DealsToPnLValue( const Rcpp::DataFrame & aDeals, const SEXP & aParams ) {
 
     const TDeals lDeals( DataFrameToDeals( aDeals, lFirstPrice ) );
 
-    return DealsToPNLCoefficientQuick( lDeals, lFirstPrice, lMinDeals );
+    return DealsToPNLCoefficientQuick( lDeals, lFirstPrice, ToSize_t(lMinDeals) );
 }
 
 //------------------------------------------------------------------------------------------
@@ -130,11 +130,12 @@ double DealsToStatValue( const Rcpp::DataFrame & aDeals, const SEXP & aParams ) 
     const Rcpp::List lParam( aParams );
     double lFirstPrice = Rcpp::as<double>( lParam["FirstPrice"] );
     const size_t N = Rcpp::as<size_t>( lParam["N"] ) ;
+    double lQuantile = Rcpp::as<double>( lParam["Quantile"] );
 
     const TDeals lDeals( DataFrameToDeals( aDeals, lFirstPrice ) );
     const TPriceSeries lPns(DealsToPnLs( lDeals ));
     
-    return PnLsToMoneyStatValue(lPns,false,N);
+    return PnLsToMoneyStatValue( lPns, false, N, lQuantile );
 }
 
 //------------------------------------------------------------------------------------------
@@ -148,7 +149,7 @@ double DealsToMonteCarloValue( const Rcpp::DataFrame & aDeals, const SEXP & aPar
     const TDeals lDeals( DataFrameToDeals( aDeals, lFirstPrice ) );
     const TPriceSeries lPns(DealsToPnLs( lDeals ));
     
-    return PnLsToMoneyMonteCarloQuantile(lPns,false,N,aSamples,lQuantile);    
+    return PnLsToMoneyMonteCarloQuantile( lPns, false, N, aSamples, lQuantile );    
 }
 
 //------------------------------------------------------------------------------------------
@@ -157,7 +158,7 @@ Rcpp::List DealsToCoeffUnrealized( const Rcpp::NumericMatrix & aBars, const Rcpp
     const TBarSeries lBars = XtsToBarSeries( aBars );
     
     const Rcpp::List lParam( aParams );
-    const size_t lMinDealsPerDay = Rcpp::as<int>( lParam[ "MinDeals" ] );
+    const double lMinDealsPerDay = Rcpp::as<double>( lParam[ "MinDeals" ] );
     double lBeginLabel = ( Rcpp::as<Rcpp::Datetime>( lParam["BeginLabel"] ) ).getFractionalTimestamp() * gOneDay;
     double lEndLabel = ( Rcpp::as<Rcpp::Datetime>( lParam["EndLabel"] ) ).getFractionalTimestamp() * gOneDay;
     
@@ -202,15 +203,15 @@ Rcpp::List DI( const Rcpp::NumericMatrix &aXts, const int aPeriod ) {
 }
 
 //------------------------------------------------------------------------------------------
-Rcpp::List RollMinMax( const Rcpp::NumericMatrix & aXts, const int aPeriod ) {
-    const TBarSeries lBars( XtsToBarSeries( aXts ) );
+Rcpp::List RollMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod ) {
+    const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
 
     TPriceSeries lMin;
     TPriceSeries lMax;
 
     if( _RollMinMax( lBars, aPeriod, lMin, lMax ) ) {
 
-        const std::string lTZone( Rcpp::as< std::string >( aXts.attr("tzone") ) );
+        const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
         ///\todo заменить плохие значения на NA
         return Rcpp::List::create(
             Rcpp::Named("Min") = PriceSeriesToXts( lMin, lTZone ),
@@ -220,6 +221,41 @@ Rcpp::List RollMinMax( const Rcpp::NumericMatrix & aXts, const int aPeriod ) {
     } else {
         return R_NilValue;
     }
+}
+
+//------------------------------------------------------------------------------------------
+Rcpp::List ForwardMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aTimeDelta ) {
+
+    if( aTimeDelta < 1 ) {
+        return R_NilValue;
+    }
+    
+    const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
+
+    TPriceSeries lMin;
+    TPriceSeries lMax;
+
+    if( _ForwardMinMax( lBars, static_cast<size_t>(aTimeDelta), lMin, lMax ) ) {
+
+        const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
+        ///\todo заменить плохие значения на NA
+        return Rcpp::List::create(
+            Rcpp::Named("Min") = PriceSeriesToXts( lMin, lTZone ),
+            Rcpp::Named("Max") = PriceSeriesToXts( lMax, lTZone )
+        );
+
+    } else {
+        return R_NilValue;
+    }
+}
+
+//------------------------------------------------------------------------------------------
+Rcpp::NumericVector ChannelSize( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod ) {
+    const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
+    const TPriceSeries lResult( _ChannelSize( lBars, aPeriod ) );
+    
+    const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
+    return PriceSeriesToXts( lResult, lTZone );
 }
 
 //------------------------------------------------------------------------------------------
@@ -240,7 +276,7 @@ Rcpp::NumericVector SAR( const Rcpp::NumericMatrix & aOHLCV, const double aAccFa
 //------------------------------------------------------------------------------------------
 Rcpp::NumericVector ZigZag( const Rcpp::NumericMatrix & aOHLCV, const double aGap ) {
     const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
-    const TPriceSeries lResult( _ZigZag(  lBars,  aGap ) );
+    const TPriceSeries lResult( _ZigZag( lBars, aGap ) );
     
     const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
     return PriceSeriesToXts( lResult, lTZone );
@@ -249,10 +285,64 @@ Rcpp::NumericVector ZigZag( const Rcpp::NumericMatrix & aOHLCV, const double aGa
 //------------------------------------------------------------------------------------------
 Rcpp::NumericVector AbsoluteZigZag( const Rcpp::NumericMatrix & aOHLCV, const double aGap ) {
     const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
-    const TPriceSeries lResult( _AbsoluteZigZag(  lBars,  aGap ) );
+    const TPriceSeries lResult( _AbsoluteZigZag( lBars, aGap ) );
     
     const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
     return PriceSeriesToXts( lResult, lTZone );
+}
+
+//------------------------------------------------------------------------------------------
+Rcpp::NumericVector Stochastic( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod ) {
+    const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
+    const TPriceSeries lResult( _Stochastic( lBars, aPeriod ) );
+    
+    const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
+    return PriceSeriesToXts( lResult, lTZone );
+}
+
+//------------------------------------------------------------------------------------------
+Rcpp::NumericVector ADX( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod ){
+    const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
+    const TPriceSeries lResult( _ADX( lBars, aPeriod ) );
+    
+    const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
+    return PriceSeriesToXts( lResult, lTZone );
+}
+
+//------------------------------------------------------------------------------------------
+Rcpp::NumericMatrix BollingerBands( const Rcpp::NumericMatrix & aXts, const int aPeriod, const double aSigma, const int aType ) {
+    const TMAPoint lMAPoint = static_cast< TMAPoint >( aType );
+    std::string lTZone;
+    const TPriceSeries lPrices( XtsToPriceSeries( aXts, lMAPoint, lTZone ) );
+    
+    TPriceSeries lMin;
+    TPriceSeries lMean;
+    TPriceSeries lMax;
+    
+    const bool lRes( _BollingerBands(lPrices, aPeriod, aSigma, lMin,lMean,lMax) );
+    
+    Rcpp::NumericMatrix lResult( lPrices.size(), 3 );
+    Rcpp::NumericVector lIndex( lPrices.size() );
+    for( size_t i=0; i < lPrices.size(); ++i ) {
+        lResult( i, 0 ) = IsEqual( lMin[ i ].Price, GetBadPrice() ) ? NA_REAL : lMin[ i ].Price ;
+        lResult( i, 1 ) = IsEqual( lMean[ i ].Price, GetBadPrice() ) ? NA_REAL : lMean[ i ].Price ;
+        lResult( i, 2 ) = IsEqual( lMax[ i ].Price, GetBadPrice() ) ? NA_REAL : lMax[ i ].Price ;
+        lIndex[ i ] = lPrices[ i ].DateTime;
+    }
+    
+    lIndex.attr("tzone") = aXts.attr("tzone");// "Europe/Moscow"; // the index has attributes
+    lIndex.attr("tclass") = "POSIXct";
+    lResult.attr("dim") = Rcpp::IntegerVector::create( lPrices.size(), 3 );
+    lResult.attr("index") = lIndex;
+    Rcpp::CharacterVector klass = Rcpp::CharacterVector::create( "xts", "zoo" );
+    lResult.attr("class") = klass;
+    lResult.attr(".indexCLASS") = "POSIXct";
+    lResult.attr("tclass") = "POSIXct";
+    lResult.attr(".indexTZ") = aXts.attr("tzone"); //"Europe/Moscow";
+    lResult.attr("tzone") = aXts.attr("tzone"); //"Europe/Moscow";
+    colnames( lResult ) = Rcpp::CharacterVector::create( "Min", "Mean", "Max" );
+    
+    return lResult;
 }
 
 //------------------------------------------------------------------------------------------
@@ -270,10 +360,10 @@ Rcpp::NumericMatrix ConvertBars( const Rcpp::NumericMatrix & aXts, const int aPe
     Rcpp::NumericMatrix lResult( lNewBars.size(), 5 );
     Rcpp::NumericVector lIndex( lNewBars.size() );
     for( size_t i=0; i < lNewBars.size(); ++i ) {
-        lResult( i, 0 ) = lNewBars[ i ].Open;
-        lResult( i, 1 ) = lNewBars[ i ].High;
-        lResult( i, 2 ) = lNewBars[ i ].Low;
-        lResult( i, 3 ) = lNewBars[ i ].Close;
+        lResult( i, 0 ) = IsEqual( lNewBars[ i ].Open, GetBadPrice() ) ? NA_REAL : lNewBars[ i ].Open ;
+        lResult( i, 1 ) = IsEqual( lNewBars[ i ].High, GetBadPrice() ) ? NA_REAL : lNewBars[ i ].High ;
+        lResult( i, 2 ) = IsEqual( lNewBars[ i ].Low, GetBadPrice() ) ? NA_REAL : lNewBars[ i ].Low ;
+        lResult( i, 3 ) = IsEqual( lNewBars[ i ].Close, GetBadPrice() ) ? NA_REAL : lNewBars[ i ].Close ;
         lResult( i, 4 ) = lNewBars[ i ].Volume;
         lIndex[ i ] = lNewBars[ i ].DateTime;
     }

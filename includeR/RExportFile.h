@@ -11,29 +11,30 @@
 #include "BasisOfStrategy.h"
 #include "Indicators.h"
 #include "PnlAction.h"
+#include "Comparers.h"
 
 // [[Rcpp::export]]
-Rcpp::NumericVector SimpleMA( const Rcpp::NumericMatrix & aXts, const int aPeriod, const int aType = 3 );
+Rcpp::NumericVector SimpleMA( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod, const int aType = 3 );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
-Rcpp::NumericVector ExponentMA( const Rcpp::NumericMatrix & aXts, const int aPeriod, const int aType = 3 );
+Rcpp::NumericVector ExponentMA( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod, const int aType = 3 );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
-Rcpp::NumericVector KaufmanMA( const Rcpp::NumericMatrix & aXts, const int aPeriod, const double aKoeff, const int aType = 3 );
+Rcpp::NumericVector KaufmanMA( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod, const double aKoeff, const int aType = 3 );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
-Rcpp::NumericVector TrueRange( const Rcpp::NumericMatrix & aXts );
+Rcpp::NumericVector TrueRange( const Rcpp::NumericMatrix & aOHLCV );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
-Rcpp::NumericVector AverageTrueRange( const Rcpp::NumericMatrix & aXts, const int aPeriod );
+Rcpp::NumericVector AverageTrueRange( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
-Rcpp::List DI( const Rcpp::NumericMatrix & aXts, const int aPeriod = 14 );
+Rcpp::List DI( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod = 14 );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
@@ -41,8 +42,9 @@ Rcpp::NumericVector ZigZag( const Rcpp::NumericMatrix & aOHLCV, const double aGa
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
- Rcpp::NumericVector AbsoluteZigZag( const Rcpp::NumericMatrix & aOHLCV, const double aGap ); 
- 
+Rcpp::NumericVector AbsoluteZigZag( const Rcpp::NumericMatrix & aOHLCV, const double aGap ); 
+//------------------------------------------------------------------------------------------
+
 //' @title The Parabolic Stop-and-Reverse calculates a trailing stop. Developed by J. Welles Wilder
 //' @name SAR
 //' @param aOHLCV xts object contains OHLCV prices
@@ -57,19 +59,39 @@ Rcpp::NumericVector SAR( const Rcpp::NumericMatrix & aOHLCV, const double aAccFa
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
-Rcpp::NumericVector MACD( const Rcpp::NumericMatrix & aXts, const int aFastPeriod, const int aSlowPeriod, const int aSmoothPeriod, const int aType = 3 );
+Rcpp::NumericVector MACD( const Rcpp::NumericMatrix & aOHLCV, const int aFastPeriod, const int aSlowPeriod, const int aSmoothPeriod, const int aType = 3 );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
-Rcpp::List Forecasting( const Rcpp::NumericMatrix & aXts, const int aForecastPeriod = 100, const double aConfidenceIntervals = 1.29, const int aType = 3 );
+Rcpp::List Forecasting( const Rcpp::NumericMatrix & aOHLCV, const int aForecastPeriod = 100, const double aConfidenceIntervals = 1.29, const int aType = 3 );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
-Rcpp::List RollMinMax( const Rcpp::NumericMatrix & aXts, const int aPeriod );
+Rcpp::List RollMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
-Rcpp::NumericMatrix ConvertBars( const Rcpp::NumericMatrix & aXts, const int aPeriod = -1 );
+Rcpp::List ForwardMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aTimeDelta );
+//------------------------------------------------------------------------------------------
+
+// [[Rcpp::export]]
+Rcpp::NumericVector ChannelSize( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod );
+//------------------------------------------------------------------------------------------
+
+// [[Rcpp::export]]
+Rcpp::NumericMatrix ConvertBars( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod = -1 );
+//------------------------------------------------------------------------------------------
+
+// [[Rcpp::export]]
+Rcpp::NumericVector Stochastic( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod );
+//------------------------------------------------------------------------------------------
+
+// [[Rcpp::export]]
+Rcpp::NumericVector ADX( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod );
+//------------------------------------------------------------------------------------------
+
+// [[Rcpp::export]]
+Rcpp::NumericMatrix BollingerBands( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod, const double aSigma=2.0, const int aType=6 );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
@@ -141,7 +163,7 @@ inline Rcpp::NumericVector PriceSeriesToXts( const TPriceSeries & aPrices, const
     Rcpp::NumericVector lIndex( aPrices.size() );
 
     for( size_t i=0; i < aPrices.size(); ++i ) {
-        lResult[ i ] = aPrices[i].Price;
+        lResult[ i ] = IsEqual( aPrices[i].Price, GetBadPrice() ) ? NA_REAL : aPrices[i].Price ;
         lIndex[ i ] = aPrices[i].DateTime;
     }
     

@@ -20,7 +20,7 @@ TEST( Basic, testCompare ) {
     
     EXPECT_FALSE( IsEqual( 5.5, 5.6 ) );
     EXPECT_TRUE( IsEqual( 5.5, 5.5 ) );
-    EXPECT_TRUE( IsEqual( 5.5, 5.5000001 ) );
+    EXPECT_TRUE( IsEqual( 5.5, 5.5000001,.000001 ) );
 }
 
 //------------------------------------------------------------------------------------------
