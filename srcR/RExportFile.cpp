@@ -320,9 +320,12 @@ Rcpp::NumericMatrix BollingerBands( const Rcpp::NumericMatrix & aXts, const int 
     TPriceSeries lMax;
     
     const bool lRes( _BollingerBands(lPrices, aPeriod, aSigma, lMin,lMean,lMax) );
+    if( not lRes){
+        return R_NilValue;
+    }
     
-    Rcpp::NumericMatrix lResult( lPrices.size(), 3 );
-    Rcpp::NumericVector lIndex( lPrices.size() );
+    Rcpp::NumericMatrix lResult( ToInt(lPrices.size()), 3 );
+    Rcpp::NumericVector lIndex( ToInt(lPrices.size()) );
     for( size_t i=0; i < lPrices.size(); ++i ) {
         lResult( i, 0 ) = IsEqual( lMin[ i ].Price, GetBadPrice() ) ? NA_REAL : lMin[ i ].Price ;
         lResult( i, 1 ) = IsEqual( lMean[ i ].Price, GetBadPrice() ) ? NA_REAL : lMean[ i ].Price ;
@@ -357,8 +360,13 @@ Rcpp::NumericMatrix ConvertBars( const Rcpp::NumericMatrix & aXts, const int aPe
         lNewBars = _CreateBars( aOldBars, static_cast< TBarPeriod >( aPeriod ) );
     }
   
-    Rcpp::NumericMatrix lResult( lNewBars.size(), 5 );
+    Rcpp::NumericMatrix lResult( ToInt(lNewBars.size()), 5 );
+    
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
     Rcpp::NumericVector lIndex( lNewBars.size() );
+#pragma GCC diagnostic pop    
+    
     for( size_t i=0; i < lNewBars.size(); ++i ) {
         lResult( i, 0 ) = IsEqual( lNewBars[ i ].Open, GetBadPrice() ) ? NA_REAL : lNewBars[ i ].Open ;
         lResult( i, 1 ) = IsEqual( lNewBars[ i ].High, GetBadPrice() ) ? NA_REAL : lNewBars[ i ].High ;

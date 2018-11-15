@@ -159,8 +159,11 @@ inline TPriceSeries XtsToPriceSeries( const Rcpp::NumericMatrix & lXts, const TM
 //------------------------------------------------------------------------------------------
 
 inline Rcpp::NumericVector PriceSeriesToXts( const TPriceSeries & aPrices, const std::string & aTZone ) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
     Rcpp::NumericVector lResult( aPrices.size() );
     Rcpp::NumericVector lIndex( aPrices.size() );
+#pragma GCC diagnostic pop
 
     for( size_t i=0; i < aPrices.size(); ++i ) {
         lResult[ i ] = IsEqual( aPrices[i].Price, GetBadPrice() ) ? NA_REAL : aPrices[i].Price ;
