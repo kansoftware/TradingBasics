@@ -67,7 +67,7 @@ Rcpp::List Forecasting( const Rcpp::NumericMatrix & aOHLCV, const int aForecastP
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
-Rcpp::List RollMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod );
+Rcpp::List RollMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod, const bool aTouch = false );
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
@@ -167,6 +167,36 @@ inline Rcpp::NumericVector PriceSeriesToXts( const TPriceSeries & aPrices, const
 
     for( size_t i=0; i < aPrices.size(); ++i ) {
         lResult[ i ] = IsEqual( aPrices[i].Price, GetBadPrice() ) ? NA_REAL : aPrices[i].Price ;
+        lIndex[ i ] = aPrices[i].DateTime;
+    }
+    
+    lIndex.attr("tzone")    = aTZone.c_str();// "Europe/Moscow"; // the index has attributes
+    lIndex.attr("tclass")   = "POSIXct";
+
+    lResult.attr("dim")         = Rcpp::IntegerVector::create( aPrices.size(), 1 );
+    lResult.attr("index")       = lIndex;
+    Rcpp::CharacterVector klass = Rcpp::CharacterVector::create( "xts", "zoo" );
+    lResult.attr("class")       = klass;
+    lResult.attr(".indexCLASS") = "POSIXct";
+    lResult.attr("tclass")      = "POSIXct";
+    lResult.attr(".indexTZ")    = aTZone.c_str(); //"Europe/Moscow";
+    lResult.attr("tzone")       = aTZone.c_str(); //"Europe/Moscow";
+
+    colnames( lResult ) = Rcpp::CharacterVector::create( "value" );
+    
+    return lResult;
+}
+//------------------------------------------------------------------------------------------
+
+inline Rcpp::NumericVector PriceSeriesVolumeToXts( const TPriceSeries & aPrices, const std::string & aTZone ) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+    Rcpp::NumericVector lResult( aPrices.size() );
+    Rcpp::NumericVector lIndex( aPrices.size() );
+#pragma GCC diagnostic pop
+
+    for( size_t i=0; i < aPrices.size(); ++i ) {
+        lResult[ i ] = aPrices[i].Volume;
         lIndex[ i ] = aPrices[i].DateTime;
     }
     

@@ -3,7 +3,7 @@
  * \brief Модуль реализующий индикаторы для одноногих стратегий
  * \author kan <kansoftware.ru>
  * \since 2015-11-10
- * \date 2018-07-24
+ * \date 2019-06-03
  * Модуль используется неизменно в проектах TradeBot и [R] BackTester
  */
 
@@ -46,7 +46,8 @@ bool _Forecasting( const TPriceSeries & aPrices, const size_t aForecastPeriod, c
 
 bool _RollMinMax( const TBarSeries & aBars, const int aPeriod, 
             TPriceSeries & aoMin, 
-            TPriceSeries & aoMax );
+            TPriceSeries & aoMax,
+            const bool aTouch = false );
 
 bool _ForwardMinMax( const TBarSeries & aBars, const size_t aTimeDelta,
             TPriceSeries & aoMin, 

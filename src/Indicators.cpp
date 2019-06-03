@@ -6,7 +6,7 @@
  * Author: kan
  * 
  * Created on 10.11.2015
- * @lastupdate 2016.03.04
+ * @lastupdate 2019.06.03
  */
 
 #include <cmath>
@@ -585,7 +585,8 @@ bool _RollMinMax(
     const TBarSeries & aBars, 
     const int aPeriod, 
     TPriceSeries & aoMin, 
-    TPriceSeries & aoMax ) {
+    TPriceSeries & aoMax,
+    const bool aTouch ) {
 
     const size_t lDataSize = aBars.size();
     const size_t lPeriod = ToSize_t( aPeriod );
@@ -622,7 +623,7 @@ bool _RollMinMax(
         TSimpleTick lTick {
             aBars[ i ].DateTime,
             lRollerLow.GetValue().min,
-            1.0
+            (IsEqual(lRollerLow.GetValue().min, aBars[ i ].Low)? 1.0 : (aTouch?0.0:1.0))
         };
         
         aoMin[ i ] = lTick;
@@ -630,8 +631,17 @@ bool _RollMinMax(
         lRollerHigh.Add( aBars[ i ].High );
         assert( lRollerHigh.IsFormed() );
         lTick.Price = lRollerHigh.GetValue().max;
+        lTick.Volume = (IsEqual(lRollerHigh.GetValue().max, aBars[ i ].High)? 1.0 : (aTouch?0.0:1.0));
         aoMax[ i ] = lTick;
     }
+    
+    if( aTouch ){
+        for( size_t i=lPeriod; i<lDataSize; ++i ){
+            aoMax[ i ].Volume = ( isPositiveValue(aoMax[ i ].Volume) and IsEqual(aoMax[ i ].Price, aoMax[ i-1 ].Price) ) ? (aoMax[ i ].Volume + aoMax[ i-1 ].Volume) : 0.0;
+            aoMin[ i ].Volume = ( isPositiveValue(aoMin[ i ].Volume) and IsEqual(aoMin[ i ].Price, aoMin[ i-1 ].Price) ) ? (aoMin[ i ].Volume + aoMin[ i-1 ].Volume) : 0.0;            
+        }
+    }
+    
     
     return true;
 }

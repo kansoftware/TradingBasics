@@ -203,19 +203,19 @@ Rcpp::List DI( const Rcpp::NumericMatrix &aXts, const int aPeriod ) {
 }
 
 //------------------------------------------------------------------------------------------
-Rcpp::List RollMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod ) {
+Rcpp::List RollMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod, const bool aTouch ) {
     const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
 
     TPriceSeries lMin;
     TPriceSeries lMax;
 
-    if( _RollMinMax( lBars, aPeriod, lMin, lMax ) ) {
-
+    if( _RollMinMax( lBars, aPeriod, lMin, lMax, aTouch ) ) {
         const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
-        ///\todo заменить плохие значения на NA
         return Rcpp::List::create(
             Rcpp::Named("Min") = PriceSeriesToXts( lMin, lTZone ),
-            Rcpp::Named("Max") = PriceSeriesToXts( lMax, lTZone )
+            Rcpp::Named("Max") = PriceSeriesToXts( lMax, lTZone ),
+            Rcpp::Named("MinVolume") = PriceSeriesVolumeToXts( lMin, lTZone ),
+            Rcpp::Named("MaxVolume") = PriceSeriesVolumeToXts( lMax, lTZone )
         );
 
     } else {
