@@ -224,6 +224,32 @@ Rcpp::List RollMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod, co
 }
 
 //------------------------------------------------------------------------------------------
+Rcpp::List SupportRessistance( 
+    const Rcpp::NumericMatrix & aOHLCV, 
+    const int aPeriod, 
+    const size_t aMinTouch, 
+    const double aTollerance ) {
+    
+    const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
+
+    TPriceSeries lMin;
+    TPriceSeries lMax;
+
+    if( _SupportRessistance( lBars, aPeriod, aMinTouch, aTollerance, lMin, lMax ) ) {
+        const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
+        return Rcpp::List::create(
+            Rcpp::Named("Min") = PriceSeriesToXts( lMin, lTZone ),
+            Rcpp::Named("Max") = PriceSeriesToXts( lMax, lTZone ),
+            Rcpp::Named("MinVolume") = PriceSeriesVolumeToXts( lMin, lTZone ),
+            Rcpp::Named("MaxVolume") = PriceSeriesVolumeToXts( lMax, lTZone )
+        );
+
+    } else {
+        return R_NilValue;
+    }
+}
+
+//------------------------------------------------------------------------------------------
 Rcpp::List ForwardMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aTimeDelta ) {
 
     if( aTimeDelta < 1 ) {

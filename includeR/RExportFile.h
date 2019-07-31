@@ -71,6 +71,10 @@ Rcpp::List RollMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod, co
 //------------------------------------------------------------------------------------------
 
 // [[Rcpp::export]]
+Rcpp::List SupportRessistance( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod, const size_t aMinTouch, const double aTollerance );
+//------------------------------------------------------------------------------------------
+
+// [[Rcpp::export]]
 Rcpp::List ForwardMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aTimeDelta );
 //------------------------------------------------------------------------------------------
 
