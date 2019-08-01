@@ -3,7 +3,7 @@
  * \brief Модуль хранящий в себе типы периодов для баров и основные методы работы с ними
  * \author kan <kansoftware.ru>
  * \since 2015-11-11
- * \date 2018-05-25
+ * \date 2019-08-01
  * Модуль используется неизменно в проектах TradeBot и [R] BackTester
  */
 
@@ -12,8 +12,12 @@
 
 #include <list>
 #include <vector>
+#include <map>
+#include <string>
 
 #include "BasisOfStrategy.h"
+
+typedef std::map<std::string, double> TValues;
 
 struct TDeal {
     TInnerDate OpenTime = 0.0;
@@ -24,6 +28,7 @@ struct TDeal {
     TInnerDate CloseTime = 0.0;
     TDealSide DealSide = TDealSide::None;
     size_t Volume = 0;
+    TValues Additive;
 
     TDeal(){;}
 
@@ -35,7 +40,8 @@ struct TDeal {
         const TPrice aClosePrice,
         const TInnerDate aCloseTime,
         const TDealSide aDealSide,
-        const size_t aVolume = 1 ) :
+        const size_t aVolume = 1,
+        const TValues aAdditive={} ) :
         OpenTime( aOpenTime ),
         OpenPrice( aOpenPrice ),
         StopLoss( aStopLoss ),
@@ -43,7 +49,8 @@ struct TDeal {
         ClosePrice( aClosePrice ),
         CloseTime( aCloseTime ),
         DealSide( aDealSide ),
-        Volume( aVolume ){;}
+        Volume( aVolume ),
+        Additive( aAdditive ){;}
 
     void Reset() {
         OpenTime = 0.0;
@@ -54,6 +61,7 @@ struct TDeal {
         ResetPrice( StopLoss );
         ResetPrice( TakeProfit );
         Volume = 0;
+        Additive.clear();
     }
 
     bool InAction() const { return DealSide == TDealSide::Buy or DealSide == TDealSide::Sell; }
