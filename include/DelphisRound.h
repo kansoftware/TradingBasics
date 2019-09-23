@@ -3,7 +3,7 @@
  * \brief Модуль содержащий методы для округления с приведением типа, как в Дельфи
  * \author kan <kansoftware.ru>
  * \since 2015-08-25
- * \date 2017-04-24
+ * \date 2019-09-23
  */
 
 #ifndef DELPHISROUND_H
@@ -37,7 +37,7 @@ const double gMaxSizet = static_cast< double >( std::numeric_limits<size_t>::max
  *  \fn ToSize_t
  *  \brief приведение size_t , отрицательные значения заменяются на 0
  */
-template< typename T > inline size_t ToSize_t( const T aValue ) {
+template< typename T > constexpr size_t ToSize_t( const T aValue ) {
     assert( ToDouble( aValue ) < gMaxSizet  );
     
     return isPositiveValue( ToDouble(aValue) ) ? static_cast< size_t >( aValue ) : 0UL ;
@@ -78,7 +78,7 @@ template< typename T > inline size_t ToSize_t( const T aValue ) {
  *  \fn RoundToSize_t
  *  \brief Округление double в size_t , отрицательные значения заменяются на 0
  */
-template< typename T > inline size_t RoundToSize_t( const T aValue ) {
+template< typename T > constexpr size_t RoundToSize_t( const T aValue ) {
     assert( ToDouble( aValue ) < gMaxSizet );
     
     return isPositiveValue( aValue ) ? static_cast< size_t >( std::round( aValue ) ) : 0UL ;
@@ -103,7 +103,7 @@ template< typename T > inline size_t RoundToSize_t( const T aValue ) {
  *  \fn CeilToSize_t
  *  \brief Округление вверх из double в size_t , отрицательные значения заменяются на 0
  */
-template< typename T > inline size_t CeilToSize_t( const T aValue ) {
+template< typename T > constexpr size_t CeilToSize_t( const T aValue ) {
     assert( ToDouble( aValue ) <  gMaxSizet );
     
     return isPositiveValue( aValue ) ? static_cast< size_t >( std::ceil( aValue ) ) : 0UL ;
@@ -128,7 +128,7 @@ template< typename T > inline size_t CeilToSize_t( const T aValue ) {
  *  \fn TruncToSize_t
  *  \brief Округление вниз из double в size_t
  */
-template< typename T > inline size_t TruncToSize_t( const T aValue ) {
+template< typename T > constexpr size_t TruncToSize_t( const T aValue ) {
     assert( ToDouble( aValue ) < gMaxSizet );
     
     return isPositiveValue( aValue ) ? static_cast< size_t >( std::floor( aValue ) ) : 0UL ;

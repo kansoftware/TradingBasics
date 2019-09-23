@@ -3,7 +3,7 @@
  * \brief Модуль хранящий в себе типы периодов для баров и основные методы работы с ними
  * \author kan <kansoftware.ru>
  * \since 2016-12-19
- * \date 2016-12-20
+ * \date 2019-09-23
  * Модуль используется неизменно в проектах TradeBot и [R] BackTester
  */
 
@@ -11,6 +11,7 @@
 #define BARPERIOD_H
 
 #include <string>
+#include <cassert>
 
 enum class TBarPeriod { 
     minValue = 0,
@@ -23,8 +24,15 @@ enum class TBarPeriod {
     Day = 7,
     Week = 8,
     maxValue };
+    
+constexpr double gOutBarPeriod[ static_cast<size_t>( TBarPeriod::maxValue ) ] = { 0.0, 60.0, 60.0*5, 60.0*10, 60.0*15, 60.0*60, 60.0*60*4, 60.0*60*24, 60.0*60*24*7 };
+
+constexpr double getBarPeriodLength( const TBarPeriod aID ) {
+    assert( aID > TBarPeriod::minValue );
+    assert( aID < TBarPeriod::maxValue );
+    return gOutBarPeriod[ static_cast<size_t>( aID ) ];    
+}
 
 std::string getBarPeriodName( const TBarPeriod aID );
-double getBarPeriodLength( const TBarPeriod aID );
 
 #endif /* BARPERIOD_H */

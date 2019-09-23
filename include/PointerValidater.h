@@ -3,7 +3,7 @@
  * \brief Модуль с шаблонами для работы с указателями
  * \author kan <kansoftware.ru>
  * \since 2014-04-22
- * \date 2016-05-24
+ * \date 2019-09-23
  * Об атомарности исполнения функций должен заботиться программист
  */
 
@@ -16,7 +16,7 @@
  *  \fn CheckPtrValidate
  *  \brief Проверка валидности указателя
  */
-template<typename T> bool isValidPointer( const T* aPointer ) {
+template<typename T> constexpr bool isValidPointer( const T* aPointer ) {
     #ifdef NDEBUG
         return aPointer != nullptr;
 
@@ -33,11 +33,11 @@ template<typename T> bool isValidPointer( const T* aPointer ) {
     #endif
 }
 
-inline bool isValidPointer( const void* aPointer ) {
+constexpr bool isValidPointer( const void* aPointer ) {
     return aPointer != nullptr;
 }
 
-template<typename T> bool isValidPointer( const std::shared_ptr< T > & aPointer ) {
+template<typename T> constexpr bool isValidPointer( const std::shared_ptr< T > & aPointer ) {
     #ifdef NDEBUG
         return aPointer.operator bool();
     #else

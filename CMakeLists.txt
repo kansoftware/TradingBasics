@@ -36,7 +36,6 @@ set( SOURCE_FILES
      src/Indicators.cpp
      src/PnlAction.cpp
      src/PowellsMethod.cpp
-     src/Prices.cpp
      src/StringHasher.cpp
 )
 

@@ -3,33 +3,42 @@
  * \brief Модуль основные определения для работы с ценами
  * \author kan <kansoftware.ru>
  * \since 2015-08-25
- * \date 2018-02-22
+ * \date 2019-09-23
  * Дополнительные функции см. в модуле PricesUtils.h
  */
 
 #ifndef PRICES_H
 #define	PRICES_H
 
-typedef double TPrice;
+#include "Comparers.h"
+
+using TPrice = double ;
 
 ///\todo можно ввести таблицу с максимальными ценами для каждого инструмента
-const TPrice gMaxPrice = 333333.33;
-const TPrice gMinPrice = 0.00000001;//0.01
-const TPrice gDefaultPrice = 0.00;
+constexpr TPrice gMaxPrice = 333333.33;
+constexpr TPrice gMinPrice = 0.00000001;//0.01
+constexpr TPrice gDefaultPrice = 0.00;
+constexpr TPrice gSpreadValueLimit = 99999.9 ;
 
 /**
  *  \brief проверка цены
  */
-bool IsValidPrice( const TPrice aPrice );
+constexpr bool IsValidPrice( const TPrice aPrice ) {
+    return IsLess( gMinPrice, aPrice ) and IsLess( aPrice, gMaxPrice ) ;
+}
 
 /**
  *  \brief Получить плохую цену
  */
-TPrice GetBadPrice();
+constexpr TPrice GetBadPrice() {
+    return -gMaxPrice;
+}
 
 /**
  *  \brief Проверка валидности значения переданного спреда
  */
-bool isValidSpreadValue( const TPrice aValue );
+constexpr bool isValidSpreadValue( const TPrice aValue ) {
+    return IsLess( -gSpreadValueLimit, aValue ) and IsLess( aValue, gSpreadValueLimit );
+}
 
 #endif	/* PRICES_H */
