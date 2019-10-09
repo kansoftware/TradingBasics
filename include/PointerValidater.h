@@ -16,11 +16,13 @@
  *  \fn CheckPtrValidate
  *  \brief Проверка валидности указателя
  */
-template<typename T> constexpr bool isValidPointer( const T* aPointer ) {
+
     #ifdef NDEBUG
+    template<typename T> constexpr bool isValidPointer( const T* aPointer ) {
         return aPointer != nullptr;
 
     #else
+    template<typename T> bool isValidPointer( const T* aPointer ) {
         if ( aPointer == nullptr ) { return false; }
 
         bool result = false;
