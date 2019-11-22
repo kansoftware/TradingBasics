@@ -3,7 +3,7 @@
  * \brief Модуль реализующий объекты для одно-ногих стратегий
  * \author kan <kansoftware.ru>
  * \since 2015-11-11
- * \date 2018-05-17
+ * \date 2019-11-22
  * Модуль используется неизменно в проектах TradeBot и [R] BackTester
  */
 
@@ -38,9 +38,17 @@ const double gOneHour = 3600.0;
 const double gStartingTime = 975888000;//GMT: Mon, 04 Dec 2000 00:00:00 GMT
 
 struct TSimpleTick {
-    TInnerDate DateTime=gStartingTime;
-    TPrice Price=0.0;
-    double Volume=0.0;
+    TInnerDate DateTime;
+    TPrice Price;
+    double Volume;
+
+    TSimpleTick(
+        const TInnerDate aDateTime=gStartingTime,
+        const TPrice aPrice=0.0,
+        const double aVolume=0.0 ):
+        DateTime(aDateTime),
+        Price(aPrice),
+        Volume(aVolume){;}
 };
 
 typedef std::vector< TSimpleTick > TPriceSeries;

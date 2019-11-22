@@ -14,7 +14,7 @@ if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
     message( WARNING "debug mode" )
 
 else()
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast" )
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -fno-finite-math-only" )
 
     message( WARNING "release mode" )
 

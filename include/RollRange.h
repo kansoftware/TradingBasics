@@ -1,9 +1,8 @@
 /**
  * \file RollRange.h
- * \brief Модуль реализующий перекатывающиеся индикаторы
- * \author Stanislav Kovalevsky <https://bitbucket.org/quanttools/>
+ * \brief Модуль реализующий перекатывающиеся индикатор Min-Max Range
  * \since 2016-10-10
- * \date 2019-07-30
+ * \date 2019-11-13
  * Модуль заимствован с https://bitbucket.org/quanttools/quanttools
  * (+) RollRange_with_tollerance [kan@kansoftware.ru]
  */
@@ -27,7 +26,6 @@ struct Range {
 
 class RollRange {
     private:
-
         Range range;
         const size_t n;
         const double p;
@@ -68,8 +66,6 @@ class RollRange {
                     :
                     *std::next( windowSorted.begin(), Trunc(p * ToDouble(n) ) );
 
-            //Rcpp::Rcout << range.min << " " << range.max << " " << range.quantile << std::endl;
-
             IsFormed() ? minHistory.push_back(range.min) : minHistory.push_back( fBadValue );
             IsFormed() ? maxHistory.push_back(range.max) : maxHistory.push_back( fBadValue );
             IsFormed() ? quantileHistory.push_back(range.quantile) : quantileHistory.push_back( fBadValue );
@@ -96,18 +92,8 @@ class RollRange {
             return quantileHistory;
         }
 
-        //  Rcpp::List GetHistory() {
-        //
-        //    Rcpp::List history = ListBuilder().AsDataTable()
-        //    .Add( "min", minHistory )
-        //    .Add( "max", maxHistory );
-        //    return history;
-        //
-        //  }
-
         void Reset() {
-            std::queue< double > empty;
-            std::swap(window, empty);
+            window={};
             windowSorted.clear();
         }
 
@@ -160,8 +146,7 @@ class RollRange_with_tollerance {
         }
 
         void Reset() {
-            std::queue< double > empty;
-            std::swap(window, empty);
+            window={};
             windowSorted.clear();
         }
 };

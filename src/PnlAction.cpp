@@ -49,22 +49,19 @@ TPriceSeries DealsToPnLs( const TDeals & aDeals ) {
     }
     //</editor-fold>
     
-    TPriceSeries lPnLs( lDeals.size() );
+    TPriceSeries lPnLs; //( lDeals.size() );
+    lPnLs.reserve(lDeals.size());
 
     //<editor-fold desc="Собственно конвертация">
-    size_t i = 0;
     for( const TDeal& lDeal : lDeals ) {
-        TSimpleTick lTick {
+        lPnLs.emplace_back(
             lDeal.CloseTime,
-            ((lDeal.DealSide == TDealSide::Buy) ? (lDeal.ClosePrice - lDeal.OpenPrice) : (lDeal.OpenPrice - lDeal.ClosePrice)),
+            ( (lDeal.DealSide == TDealSide::Buy) ? (lDeal.ClosePrice - lDeal.OpenPrice) : (lDeal.OpenPrice - lDeal.ClosePrice) ),
             ToDouble( lDeal.Volume )
-        };
-
-        lPnLs[ i++ ] = lTick;
+        );
     }
     //</editor-fold>
-    
-    assert( i == lPnLs.size() );
+
     return lPnLs;
 }
 

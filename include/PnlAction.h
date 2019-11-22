@@ -3,7 +3,7 @@
  * \brief Модуль хранящий в себе типы периодов для баров и основные методы работы с ними
  * \author kan <kansoftware.ru>
  * \since 2015-11-11
- * \date 2019-08-01
+ * \date 2019-11-18
  * Модуль используется неизменно в проектах TradeBot и [R] BackTester
  */
 
@@ -16,6 +16,15 @@
 #include <string>
 
 #include "BasisOfStrategy.h"
+
+const double gMaxBedAttraction = -99.9;
+const double gFiltredByCount = -33.3;
+const double gFiltredByCountPnl = -66.6;
+const double gFiltredByPnl = 0.0;
+
+const size_t gMinDealsForAllTime = 6UL;
+const size_t gMinDealsStatictics = 30UL;
+const size_t gWellDealsStatictics = 1000UL;
 
 typedef std::map<std::string, double> TValues;
 
@@ -81,10 +90,10 @@ bool CalcDrawDown(
     TInnerDate & aoReturn );
 
 TPrice PnLsToMoneyResult( const TPriceSeries & aPnl, const bool aUseVolume = false );
-TPrice PnLsToMoneyStatValue( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30, const double aQuantile=0.2 );
-TPrice PnLsToMoneyStatValueGost( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30  );
-TPrice PnLsToMoneyMonteCarlo( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30, const size_t aSamples=1000 );
-TPrice PnLsToMoneyMonteCarloQuantile( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=30, const size_t aSamples=1000, const double aQuantile=0.05 );
+TPrice PnLsToMoneyStatValue( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=gMinDealsStatictics, const double aQuantile=0.2 );
+TPrice PnLsToMoneyStatValueGost( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=gMinDealsStatictics  );
+TPrice PnLsToMoneyMonteCarlo( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=gMinDealsStatictics, const size_t aSamples=gWellDealsStatictics );
+TPrice PnLsToMoneyMonteCarloQuantile( const TPriceSeries & aPnl, const bool aUseVolume = false, const size_t N=gMinDealsStatictics, const size_t aSamples=gWellDealsStatictics, const double aQuantile=0.05 );
 
 TPriceSeries PnLsAmplifier( const TPriceSeries &aPnl, const std::vector<double> &aAmplifiers, const TInnerDate aBegin=-1.0, const TInnerDate aEnd=-1.0 );
 
@@ -95,15 +104,8 @@ TPriceSeries ReductionOfTheIncome(
     const size_t aLossNum,
     const double aLossCoef );
 
-const double gMaxBedAttraction = -99.9;
-const double gFiltredByCount = -33.3;
-const double gFiltredByCountPnl = -66.6;
-const double gFiltredByPnl = 0.0;
-
-const size_t gMinDealsForAllTime = 6;
-
 TPriceSeries DealsToPnLs( const TDeals & aDeals );
-TPrice DealsToPNLCoefficientQuick( const TDeals & aDeals, const TPrice aFirstPrice, const size_t aMinDeals = 10 );
+TPrice DealsToPNLCoefficientQuick( const TDeals & aDeals, const TPrice aFirstPrice, const size_t aMinDeals = gMinDealsForAllTime );
 TPrice DealsToCoeff( const TBarSeries & aBars, const TDeals & aDeals, const size_t aMinDeals, TPrice & aoPnl, TPrice & aoMaxDD, size_t & aoMaxPos, size_t & aoMeadPos );
 
 TPrice DealsToPNLCoefficient(
@@ -111,7 +113,7 @@ TPrice DealsToPNLCoefficient(
     const TInnerDate aFirstPoint,
     const TInnerDate aLastPoint,
     const TPrice aMinPnl = 0.0,
-    const size_t aMinDeals = 10,
+    const size_t aMinDeals = gMinDealsForAllTime,
     const size_t aQuantTime = 86400 * 7 );
 
 TPriceSeries PnlsToDaily( const TPriceSeries & aPnls );

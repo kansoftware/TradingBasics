@@ -33,6 +33,7 @@
 
 # NetBeans IDE Files
 nbproject/*
-/gtests/build/
-/buildR/
-/buildtest/
+gtests/build/*
+buildR/*
+build/*
+buildtest/*
