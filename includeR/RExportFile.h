@@ -163,6 +163,11 @@ inline TPriceSeries XtsToPriceSeries( const Rcpp::NumericMatrix & lXts, const TM
 //------------------------------------------------------------------------------------------
 
 inline Rcpp::NumericVector PriceSeriesToXts( const TPriceSeries & aPrices, const std::string & aTZone ) {
+
+    if(aPrices.empty()){
+        return Rcpp::NumericVector();
+    }
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
     Rcpp::NumericVector lResult( aPrices.size() );

@@ -131,7 +131,8 @@ TPriceSeries ReductionOfTheIncome(
     for( size_t i = 0; i < aPnL.size(); ++i ) {
 
         TPrice lValue = aPnL[ i ].Price ;
-        lProfits.insert( std::pair< TPrice, size_t >( lValue, i ) ) ;
+        //lProfits.insert( std::pair< TPrice, size_t >( lValue, i ) ) ;
+        lProfits.emplace( lValue, i ) ;
     }
 
     TPriceSeries lPnLVector( aPnL );

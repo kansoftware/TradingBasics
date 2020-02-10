@@ -3,6 +3,7 @@
  * Author: wellington
  *
  * Created on November 13, 2019, 12:55 PM
+ * \date 2019-11-26
  * The idea is from https://bitbucket.org/quanttools/quanttools/src/master/inst/include/Indicators/Sma.h
  */
 
@@ -46,7 +47,7 @@ class RollSMA {
         }
 
         double GetValue() const {
-            return ((fCounter == fN) ? (fSum / fCounter) : NAN);
+            return ((fCounter == fN) ? (fSum / static_cast<double>(fCounter)) : NAN);
         }
 
         void Reset() {
