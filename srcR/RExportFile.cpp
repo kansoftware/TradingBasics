@@ -210,7 +210,7 @@ Rcpp::List RollMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod, co
     TPriceSeries lMax;
 
     if( _RollMinMax( lBars, aPeriod, lMin, lMax, aTouch ) ) {
-        const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
+        const std::string lTZone( getTimeZone( aOHLCV ) );
         return Rcpp::List::create(
             Rcpp::Named("Min") = PriceSeriesToXts( lMin, lTZone ),
             Rcpp::Named("Max") = PriceSeriesToXts( lMax, lTZone ),
@@ -236,7 +236,7 @@ Rcpp::List SupportRessistance(
     TPriceSeries lMax;
 
     if( _SupportRessistance( lBars, aPeriod, aMinTouch, aTollerance, lMin, lMax ) ) {
-        const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
+        const std::string lTZone( getTimeZone(aOHLCV) );
         return Rcpp::List::create(
             Rcpp::Named("Min") = PriceSeriesToXts( lMin, lTZone ),
             Rcpp::Named("Max") = PriceSeriesToXts( lMax, lTZone ),
@@ -263,8 +263,7 @@ Rcpp::List ForwardMinMax( const Rcpp::NumericMatrix & aOHLCV, const int aTimeDel
 
     if( _ForwardMinMax( lBars, static_cast<size_t>(aTimeDelta), lMin, lMax ) ) {
 
-        const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
-        ///\todo заменить плохие значения на NA
+        const std::string lTZone(getTimeZone(aOHLCV));
         return Rcpp::List::create(
             Rcpp::Named("Min") = PriceSeriesToXts( lMin, lTZone ),
             Rcpp::Named("Max") = PriceSeriesToXts( lMax, lTZone )
@@ -280,7 +279,7 @@ Rcpp::NumericVector ChannelSize( const Rcpp::NumericMatrix & aOHLCV, const int a
     const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
     const TPriceSeries lResult( _ChannelSize( lBars, aPeriod ) );
     
-    const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
+    const std::string lTZone(getTimeZone(aOHLCV));
     return PriceSeriesToXts( lResult, lTZone );
 }
 
@@ -295,7 +294,7 @@ Rcpp::NumericVector SAR( const Rcpp::NumericMatrix & aOHLCV, const double aAccFa
         _IntradayParabolicSar( lBars, aAccFactor, aMaxAccFactor ) 
     );
 
-    const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
+    const std::string lTZone(getTimeZone(aOHLCV));
     return PriceSeriesToXts( lResult, lTZone );
 }
 
@@ -304,7 +303,7 @@ Rcpp::NumericVector ZigZag( const Rcpp::NumericMatrix & aOHLCV, const double aGa
     const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
     const TPriceSeries lResult( _ZigZag( lBars, aGap ) );
     
-    const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
+    const std::string lTZone(getTimeZone(aOHLCV));
     return PriceSeriesToXts( lResult, lTZone );
 }
 
@@ -313,7 +312,7 @@ Rcpp::NumericVector AbsoluteZigZag( const Rcpp::NumericMatrix & aOHLCV, const do
     const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
     const TPriceSeries lResult( _AbsoluteZigZag( lBars, aGap ) );
     
-    const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
+    const std::string lTZone(getTimeZone(aOHLCV));
     return PriceSeriesToXts( lResult, lTZone );
 }
 
@@ -322,7 +321,7 @@ Rcpp::NumericVector Stochastic( const Rcpp::NumericMatrix & aOHLCV, const int aP
     const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
     const TPriceSeries lResult( _Stochastic( lBars, aPeriod ) );
     
-    const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
+    const std::string lTZone(getTimeZone(aOHLCV));
     return PriceSeriesToXts( lResult, lTZone );
 }
 
@@ -331,7 +330,7 @@ Rcpp::NumericVector ADX( const Rcpp::NumericMatrix & aOHLCV, const int aPeriod )
     const TBarSeries lBars( XtsToBarSeries( aOHLCV ) );
     const TPriceSeries lResult( _ADX( lBars, aPeriod ) );
     
-    const std::string lTZone( Rcpp::as< std::string >( aOHLCV.attr("tzone") ) );
+    const std::string lTZone(getTimeZone(aOHLCV));
     return PriceSeriesToXts( lResult, lTZone );
 }
 

@@ -6,7 +6,7 @@
  * Author: kan
  * 
  * Created on 10.11.2015
- * @lastupdate 2019.06.03
+ * @lastupdate 2020.02.14
  */
 
 #include <cmath>
@@ -23,27 +23,29 @@
 //------------------------------------------------------------------------------------------
 TPriceSeries _TrueRange( const TBarSeries & aBars ) {
 
-    TPriceSeries lResult( aBars.size() );
+    TPriceSeries lResult;
+    lResult.reserve( aBars.size() );
 
     if( not aBars.empty() ) {
 
-        TSimpleBar lPriorBar = *aBars.begin();
+        TSimpleBar lPriorBar( *aBars.begin() );
         
-        TSimpleTick lTick {
+        lResult.emplace_back( 
             lPriorBar.DateTime,
             lPriorBar.High - lPriorBar.Low,
-            lPriorBar.Volume };
-        lResult[ 0 ] = lTick;
+            lPriorBar.Volume 
+        );
 
         for( size_t i = 1; i < aBars.size(); ++i ) {
-            const TSimpleBar lCurrentBar = aBars[ i ];
+            const TSimpleBar lCurrentBar( aBars[ i ] );
             const TPrice lHigh = std::max( lPriorBar.Close , lCurrentBar.High );
             const TPrice lLow = std::min( lPriorBar.Close , lCurrentBar.Low );
 
-            lTick.DateTime = lCurrentBar.DateTime ;
-            lTick.Price = lHigh - lLow ;
-            lTick.Volume = lCurrentBar.Volume ;
-            lResult[ i ] = lTick;
+            lResult.emplace_back(
+                lCurrentBar.DateTime,
+                lHigh - lLow,
+                lCurrentBar.Volume
+            );
             lPriorBar = lCurrentBar;
         }
     }
@@ -68,29 +70,30 @@ TPriceSeries _SimpleMA( const TPriceSeries & aPrices, const int aPeriod, const s
     const size_t lPeriod = ToSize_t( aPeriod );
     const size_t lResultSize = aPrices.size() ;
     
-    TPriceSeries lResult( lResultSize );
+    TPriceSeries lResult;
+    lResult.reserve( lResultSize );
     
     if( lResultSize > lPeriod ) {
         
         for( size_t j = 0; j < aLag ; ++j ) {
-            lResult[ j ] = TSimpleTick{ aPrices[ j ].DateTime, GetBadPrice(), 0.0 };
+            lResult.emplace_back( aPrices[ j ].DateTime, GetBadPrice(), 0.0 );
         }
         
         TPrice lSum = 0.0;
         for( size_t j = aLag; j < lPeriod - 1 ; ++j ) {
-            lResult[ j ] = TSimpleTick{ aPrices[ j ].DateTime, GetBadPrice(), 0.0 };
+            lResult.emplace_back( aPrices[ j ].DateTime, GetBadPrice(), 0.0 );
             lSum += aPrices[ j ].Price;
         }
 
         for( size_t i = lPeriod - 1; i < lResultSize; ++i ) {
             lSum += aPrices[ i ].Price;
-            lResult[ i ] = TSimpleTick{ aPrices[ i ].DateTime, lSum / ToDouble( lPeriod ), 1.0 };
+            lResult.emplace_back( aPrices[ i ].DateTime, lSum / ToDouble( lPeriod ), 1.0 );
             lSum -= aPrices[ i - lPeriod + 1 ].Price;
         }
 
     } else {
         for( size_t i = 0; i < lResultSize; ++i ) {
-            lResult[ i ] = TSimpleTick{ aPrices[ i ].DateTime, GetBadPrice(), 0.0 };
+            lResult.emplace_back( aPrices[ i ].DateTime, GetBadPrice(), 0.0 );
         }
     }
 

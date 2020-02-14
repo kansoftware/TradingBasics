@@ -118,43 +118,52 @@ double DealsToMonteCarloValue( const Rcpp::DataFrame & aDeals, const SEXP & aPar
 Rcpp::List DealsToCoeffUnrealized( const Rcpp::NumericMatrix & aBars, const Rcpp::DataFrame & aDeals, const SEXP & aParams );
 //------------------------------------------------------------------------------------------
 
+inline std::string getTimeZone(const Rcpp::NumericMatrix & aData){
+    std::string lTZone;
+    try{
+        lTZone = Rcpp::as< std::string >( aData.attr("tzone") );
+    }catch(...){
+        std::cout << "tzone import error"  << std::endl;
+    };
+    
+    return lTZone;
+}
+//------------------------------------------------------------------------------------------
 
-inline TPriceSeries XtsToPriceSeries( const Rcpp::NumericMatrix & lXts, const TMAPoint aType, std::string & aoTZone ) {
-    const Rcpp::NumericVector lIndex( lXts.attr("index") );
-    aoTZone.assign( Rcpp::as< std::string >( lXts.attr("tzone") ) );
+inline TPriceSeries XtsToPriceSeries( const Rcpp::NumericMatrix & aData, const TMAPoint aType, std::string & aoTZone ) {
+    const Rcpp::NumericVector lIndex( aData.attr("index") );
+    aoTZone = getTimeZone( aData );
 
-    if( lXts.ncol() < 5 ) {
+    if( aData.ncol() < 5 ) {
         throw std::logic_error( "Need Xts with OHLCV bars" );
     }
 
-    TPriceSeries lResult( lXts.nrow() );
+    TPriceSeries lResult;
+    lResult.reserve( aData.nrow() );
 
     if( aType == TMAPoint::MAP_Mid ) {
-        for( int lRowNum = 0; lRowNum < lXts.nrow(); ++lRowNum ) {
+        for( int lRowNum = 0; lRowNum < aData.nrow(); ++lRowNum ) {
             const TPrice lPrice = (
-                lXts.at( lRowNum, static_cast<int>( TMAPoint::MAP_High ) ) +
-                lXts.at( lRowNum, static_cast<int>( TMAPoint::MAP_Low ) )
+                aData.at( lRowNum, static_cast<int>( TMAPoint::MAP_High ) ) +
+                aData.at( lRowNum, static_cast<int>( TMAPoint::MAP_Low ) )
             ) / 2.0 ;
-            const TSimpleTick lTick { lIndex[ lRowNum ], lPrice, lXts.at( lRowNum, static_cast<int>( TMAPoint::MAP_Volume ) ) };
-            lResult[ lRowNum ] = lTick;
+            lResult.emplace_back( lIndex[ lRowNum ], lPrice, aData.at( lRowNum, static_cast<int>( TMAPoint::MAP_Volume ) ) );
         }
 
     } else if( aType == TMAPoint::MAP_Triple ) {
-        for( int lRowNum = 0; lRowNum < lXts.nrow(); ++lRowNum ) {
+        for( int lRowNum = 0; lRowNum < aData.nrow(); ++lRowNum ) {
             const TPrice lPrice =(
-                lXts.at( lRowNum, static_cast<int>( TMAPoint::MAP_High ) ) +
-                lXts.at( lRowNum, static_cast<int>( TMAPoint::MAP_Low ) ) +
-                lXts.at( lRowNum, static_cast<int>( TMAPoint::MAP_Close ) )
+                aData.at( lRowNum, static_cast<int>( TMAPoint::MAP_High ) ) +
+                aData.at( lRowNum, static_cast<int>( TMAPoint::MAP_Low ) ) +
+                aData.at( lRowNum, static_cast<int>( TMAPoint::MAP_Close ) )
             ) / 3.0 ;
-            const TSimpleTick lTick { lIndex[ lRowNum ], lPrice, lXts.at( lRowNum, static_cast<int>( TMAPoint::MAP_Volume ) ) };
-            lResult[ lRowNum ] = lTick;
+            lResult.emplace_back( lIndex[ lRowNum ], lPrice, aData.at( lRowNum, static_cast<int>( TMAPoint::MAP_Volume ) ) );
         }
 
     } else {
-        for( int lRowNum = 0; lRowNum < lXts.nrow(); ++lRowNum ) {
-            const TPrice lPrice =lXts.at( lRowNum, static_cast<int>( aType ) );
-            const TSimpleTick lTick { lIndex[ lRowNum ], lPrice, lXts.at( lRowNum, static_cast<int>( TMAPoint::MAP_Volume ) ) };
-            lResult[ lRowNum ] = lTick;
+        for( int lRowNum = 0; lRowNum < aData.nrow(); ++lRowNum ) {
+            const TPrice lPrice = aData.at( lRowNum, static_cast<int>( aType ) );
+            lResult.emplace_back( lIndex[ lRowNum ], lPrice, aData.at( lRowNum, static_cast<int>( TMAPoint::MAP_Volume ) ) );
         }
     }
 
@@ -227,24 +236,23 @@ inline Rcpp::NumericVector PriceSeriesVolumeToXts( const TPriceSeries & aPrices,
 }
 //------------------------------------------------------------------------------------------
 
-inline TBarSeries XtsToBarSeries( const Rcpp::NumericMatrix & lXts ) {
-    const int lDataSize = lXts.nrow();
-    TBarSeries lResult( lDataSize );
+inline TBarSeries XtsToBarSeries( const Rcpp::NumericMatrix & aBar ) {
+    const int lDataSize = aBar.nrow();
+    TBarSeries lResult;
+    lResult.reserve( lDataSize );
     
     if( lDataSize > 0 ) {
-        const Rcpp::NumericVector lIndex( lXts.attr("index") );
+        const Rcpp::NumericVector lIndex( aBar.attr("index") );
 
         for( int lRowNum = 0; lRowNum < lDataSize; ++lRowNum ) {
-            TSimpleBar lBar {
+            lResult.push_back({
                 lIndex[ lRowNum ],
-                lXts.at( lRowNum, static_cast<int>( TMAPoint::MAP_Open ) ),
-                lXts.at( lRowNum, static_cast<int>( TMAPoint::MAP_High ) ),
-                lXts.at( lRowNum, static_cast<int>( TMAPoint::MAP_Low ) ),
-                lXts.at( lRowNum, static_cast<int>( TMAPoint::MAP_Close ) ),
-                lXts.at( lRowNum, static_cast<int>( TMAPoint::MAP_Volume ) )
-            };
-
-            lResult[ lRowNum ]= lBar;
+                aBar.at( lRowNum, static_cast<int>( TMAPoint::MAP_Open ) ),
+                aBar.at( lRowNum, static_cast<int>( TMAPoint::MAP_High ) ),
+                aBar.at( lRowNum, static_cast<int>( TMAPoint::MAP_Low ) ),
+                aBar.at( lRowNum, static_cast<int>( TMAPoint::MAP_Close ) ),
+                aBar.at( lRowNum, static_cast<int>( TMAPoint::MAP_Volume ) )
+            });
         }
     }
 
@@ -254,18 +262,18 @@ inline TBarSeries XtsToBarSeries( const Rcpp::NumericMatrix & lXts ) {
 
 inline TPriceSeries IndicatorToPriceSeries( const Rcpp::NumericMatrix & aData  ){
     const int lDataSize = aData.nrow();
-    TPriceSeries lResult( lDataSize );
+    TPriceSeries lResult;
+    lResult.reserve( lDataSize );
     
     if( lDataSize > 0 ) {
         const Rcpp::NumericVector lIndex( aData.attr("index") );
 
         for( int lRowNum = 0; lRowNum < lDataSize; ++lRowNum ) {
-            const TSimpleTick lValue{
+            lResult.emplace_back(
                 lIndex[ lRowNum ],
                 aData.at( lRowNum, 0 ),
                 1
-            };
-            lResult[ lRowNum ]= lValue;
+            );
         }
     }
 
