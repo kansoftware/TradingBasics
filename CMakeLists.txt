@@ -21,13 +21,7 @@ else()
 endif() 
 
 
-enable_testing()
-if( BUILD_TESTING )
-    add_subdirectory( "gtests" )
-endif()
-
 include_directories( "include" )
-
 set( SOURCE_FILES
      src/BarPeriod.cpp
      src/BasisOfStrategy.cpp
@@ -40,3 +34,9 @@ set( SOURCE_FILES
 )
 
 add_library(TradingBasics ${SOURCE_FILES})
+
+
+enable_testing()
+if( BUILD_TESTING )
+    add_subdirectory( "gtests" )
+endif()

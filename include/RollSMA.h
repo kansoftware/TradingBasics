@@ -1,5 +1,5 @@
 /* 
- * File:   SMA.h
+ * File:   RollSMA.h
  * Author: wellington
  *
  * Created on November 13, 2019, 12:55 PM
@@ -18,14 +18,14 @@ class RollSMA {
     private:
         double fSum;
         const std::size_t fN;
-        std::size_t fCounter;
+        //std::size_t fCounter;
         std::queue< double > fWindow;
 
     public:
         RollSMA( const int n ) :
             fSum( 0.0 ),
-            fN( static_cast<size_t>(n) ),
-            fCounter( 0 ) {
+            fN( static_cast<size_t>(n) )
+            /*,fCounter( 0 )*/ {
                 if (n < 1) throw std::invalid_argument("n must be greater than 0");
         }
 
@@ -33,12 +33,12 @@ class RollSMA {
 
             fSum += value;
             fWindow.push(value);
-            fCounter++;
+            //fCounter++;
 
             if (fWindow.size() > fN) {
                 fSum -= fWindow.front();
                 fWindow.pop();
-                fCounter--;
+                //fCounter--;
             }
         }
 
@@ -47,7 +47,7 @@ class RollSMA {
         }
 
         double GetValue() const {
-            return ((fCounter == fN) ? (fSum / static_cast<double>(fCounter)) : NAN);
+            return ((fWindow.size() == fN) ? (fSum / static_cast<double>(fN)) : NAN);
         }
 
         void Reset() {

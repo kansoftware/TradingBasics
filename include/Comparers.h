@@ -3,7 +3,7 @@
  * \brief Модуль содержащий методы для сравнения чисел с заданной точностью
  * \author kan <kansoftware.ru>
  * \since 2015-08-25
- * \date 2019-09-23
+ * \date 2020-02-28
  */
 
 #ifndef COMPARERS_H
@@ -51,6 +51,16 @@ template< typename TData > constexpr bool IsNotEqual( const TData A, const TData
  */
 template< typename TData > constexpr bool IsEqual( const TData A, const TData B, const double aAbsoluteZero = gAbsoluteZero ) {
     return ( isZero( A - B, aAbsoluteZero ) );
+}
+
+
+/**
+ *  \brief получить знак числа
+ */
+template< typename TData > constexpr int Sign( TData x, const double aAbsoluteZero = gAbsoluteZero ){
+  if( x > aAbsoluteZero ) return 1;
+  if( x < -aAbsoluteZero ) return -1;
+  return 0;
 }
 
 #endif	/* COMPARERS_H */

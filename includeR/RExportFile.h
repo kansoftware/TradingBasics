@@ -123,7 +123,7 @@ inline std::string getTimeZone(const Rcpp::NumericMatrix & aData){
     try{
         lTZone = Rcpp::as< std::string >( aData.attr("tzone") );
     }catch(...){
-        std::cout << "tzone import error"  << std::endl;
+        //std::cout << "tzone import error"  << std::endl;
     };
     
     return lTZone;
