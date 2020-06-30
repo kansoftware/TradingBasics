@@ -434,3 +434,60 @@ bool SaveData( const Rcpp::NumericMatrix & aOHLCV, const SEXP & aFileName ) {
 }  
 
 //------------------------------------------------------------------------------------------
+std::any getValueFromR( Rcpp::List::NameProxy aValue, const std::type_index aType ) {
+
+    std::any lResult;
+    
+    if(aType == std::type_index(typeid(size_t))){ 
+        lResult = Rcpp::as<size_t>(aValue); 
+    }
+
+    if(aType == std::type_index(typeid(int))){
+        lResult = Rcpp::as<int>(aValue);
+    }
+
+    if(aType == std::type_index(typeid(double))){ 
+        lResult = Rcpp::as<double>(aValue);
+    }
+
+    if(aType == std::type_index(typeid(float))){ 
+        lResult = Rcpp::as<float>(aValue);
+    }
+
+    if(aType == std::type_index(typeid(std::string))){ 
+        lResult = std::make_any<std::string>(Rcpp::as<std::string>(aValue));
+    }
+    
+    return lResult;
+}
+
+//------------------------------------------------------------------------------------------
+std::string R2String( Rcpp::List::NameProxy aValue, const std::type_index aType ) {
+
+    std::string lResult;
+    
+    if(aType == std::type_index(typeid(size_t))){ 
+        lResult = std::to_string(Rcpp::as<size_t>(aValue));
+    }
+
+    if(aType == std::type_index(typeid(int))){
+        lResult = std::to_string(Rcpp::as<int>(aValue));
+    }
+
+    if(aType == std::type_index(typeid(double))){ 
+        lResult = std::to_string(Rcpp::as<double>(aValue));
+    }
+
+    if(aType == std::type_index(typeid(float))){ 
+        lResult = std::to_string(Rcpp::as<float>(aValue));
+    }
+
+    if(aType == std::type_index(typeid(std::string))){ 
+        lResult = Rcpp::as<std::string>(aValue);
+    }
+    
+    return lResult;
+
+}
+
+//------------------------------------------------------------------------------------------

@@ -1,14 +1,14 @@
-/* 
+/*** 
  * File:   RollSMA.h
- * Author: wellington
+ * Author: kan
  *
  * Created on November 13, 2019, 12:55 PM
  * \date 2019-11-26
  * The idea is from https://bitbucket.org/quanttools/quanttools/src/master/inst/include/Indicators/Sma.h
  */
 
-#ifndef SMA_H
-#define SMA_H
+#ifndef ROLLSMA_H
+#define ROLLSMA_H
 
 #include <queue>
 #include <stdexcept>
@@ -18,27 +18,23 @@ class RollSMA {
     private:
         double fSum;
         const std::size_t fN;
-        //std::size_t fCounter;
         std::queue< double > fWindow;
 
     public:
         RollSMA( const int n ) :
             fSum( 0.0 ),
-            fN( static_cast<size_t>(n) )
-            /*,fCounter( 0 )*/ {
+            fN( static_cast<size_t>(n) ) {
                 if (n < 1) throw std::invalid_argument("n must be greater than 0");
-        }
+            }
 
         void Add( double value ) {
 
             fSum += value;
             fWindow.push(value);
-            //fCounter++;
 
             if (fWindow.size() > fN) {
                 fSum -= fWindow.front();
                 fWindow.pop();
-                //fCounter--;
             }
         }
 
@@ -56,5 +52,4 @@ class RollSMA {
         }
 };
 
-#endif /* SMA_H */
-
+#endif /* ROLLSMA_H */

@@ -3,7 +3,7 @@
  * \brief Модуль реализующий объекты для одно-ногих стратегий
  * \author kan <kansoftware.ru>
  * \since 2015-11-11
- * \date 2019-11-22
+ * \date 2020-06-22
  * Модуль используется неизменно в проектах TradeBot и [R] BackTester
  */
 
@@ -31,7 +31,8 @@ enum class TMAPoint {
 
 enum class TDealSide { None=0, Buy=1, Sell=2, Any };
 
-typedef double TInnerDate;
+using TInnerDate = double;
+using TInnerTime = double;
 
 const double gOneDay = 86400.0;
 const double gOneHour = 3600.0;
@@ -51,9 +52,9 @@ struct TSimpleTick {
         Volume(aVolume){;}
 };
 
-typedef std::vector< TSimpleTick > TPriceSeries;
+using TPriceSeries = std::vector< TSimpleTick >;
 
-typedef std::map< std::string, TPriceSeries > TIndicators;
+using TIndicators = std::map< std::string, TPriceSeries >;
 
 struct TSimpleBar {
     TInnerDate DateTime=gStartingTime;
@@ -68,7 +69,7 @@ void Reset( TSimpleBar &aBar );
 TSimpleBar operator+( const TSimpleBar &aStartBar, const TSimpleBar &aFinishBar );
 bool IsValidBar( const TSimpleBar & aBar );
 
-typedef std::vector< TSimpleBar > TBarSeries;
+using TBarSeries = std::vector< TSimpleBar > ;
 const TSimpleBar gEmptyBar{gStartingTime,0.0,0.0,0.0,0.0,-1.0};
 
 bool IsOneDay( const TInnerDate aLeft, const TInnerDate aRight );
@@ -79,6 +80,8 @@ TPriceSeries BarsToPriceSeries( const TBarSeries & aBar, const TMAPoint aType );
 TBarSeries _CreateBars( const TBarSeries & aBars, const TBarPeriod aBarPeriod );
 
 std::string DateToStr( const TInnerDate aDate );
+TInnerTime ITime( const TInnerDate aDate );
+TInnerTime ITime( const std::string aTime );
 
 std::ostream& operator<<( std::ostream &out, const TSimpleBar &aBar );
 std::ostream& operator<<( std::ostream &out, const TSimpleTick &aTick );
@@ -87,6 +90,6 @@ TPrice RoundTo( const TPrice aPrice, const TPrice aPriceStep );
 TPrice TruncTo( const TPrice aPrice, const TPrice aPriceStep );
 TPrice CeilTo( const TPrice aPrice, const TPrice aPriceStep );
 
-typedef std::function< TPriceSeries ( const TPriceSeries & aPrices, const int aPeriod ) > TfunMA;
+using TfunMA = std::function< TPriceSeries ( const TPriceSeries & aPrices, const int aPeriod ) >;
 
 #endif //BACKTESTER_BASISOFSTRATEGY_H

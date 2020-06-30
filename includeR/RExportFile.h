@@ -5,7 +5,12 @@
 #ifndef BACKTESTER_REXPORTFILE_H
 #define BACKTESTER_REXPORTFILE_H
 
+#include <typeinfo>
+#include <typeindex>
+#include <any>
+
 #include <Rcpp.h>
+
 #include "PointerValidater.h"
 #include "FileManipulator.h"
 #include "BasisOfStrategy.h"
@@ -307,6 +312,12 @@ inline TDeals DataFrameToDeals( const Rcpp::DataFrame & aDeals, TPrice aFirstPri
 
     return lResult;
 }
+//------------------------------------------------------------------------------------------
+
+std::any getValueFromR( Rcpp::List::NameProxy aValue, const std::type_index aType );
+//------------------------------------------------------------------------------------------
+
+std::string R2String( Rcpp::List::NameProxy aValue, const std::type_index aType );
 //------------------------------------------------------------------------------------------
 
 #endif //BACKTESTER_REXPORTFILE_H

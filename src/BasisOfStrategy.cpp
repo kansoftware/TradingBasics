@@ -190,6 +190,37 @@ std::string DateToStr( const TInnerDate aDate ) {
 }
 
 //------------------------------------------------------------------------------------------
+TInnerTime ITime( const TInnerDate aDate ) {
+    return  ToDouble(ToInt(aDate) % ToInt(gOneDay));
+}
+
+//------------------------------------------------------------------------------------------
+TInnerTime ITime( const std::string aTime ) {
+    std::string s{aTime};
+    const std::string delimiter{":"};
+    int lHours;
+    size_t pos = 0;
+
+    if ((pos = s.find(delimiter)) != std::string::npos) {
+        lHours = std::stoi(s.substr(0, pos));
+        s.erase(0, pos + delimiter.length());
+    } else {
+        return 0.0;
+    }
+
+    if ((pos = s.find(delimiter)) != std::string::npos) {
+        int lMinutes = std::stoi(s.substr(0, pos));
+        s.erase(0, pos + delimiter.length());
+        int lSeconds = std::stoi(s.substr(0, pos));
+
+        return ToDouble(lHours * 3600 + lMinutes * 60 + lSeconds);
+    } else {
+        int lMinutes = std::stoi(s);
+        return ToDouble(lHours * 3600 + lMinutes * 60);
+    }
+}
+
+//------------------------------------------------------------------------------------------
 std::ostream& operator<<( std::ostream &out, const TSimpleBar &aBar ) {
     std::stringstream strm;
     

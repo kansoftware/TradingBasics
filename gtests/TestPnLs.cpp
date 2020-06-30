@@ -3,6 +3,8 @@
 #include "BasisOfStrategy.h"
 #include "PnlAction.h"
 #include "DelphisRound.h"
+#include "VolatilityBuffer.h"
+#include "VolatilityBarBuffer.h"
 
 //------------------------------------------------------------------------------------------
 TPriceSeries GetSimplePnl(){
@@ -44,7 +46,6 @@ TEST( PnLs, PnlsToDaily ) {
         EXPECT_EQ( lCumPnl, lPnls_Daily[i].Price );
         EXPECT_EQ( lPnls_Daily[i].Volume, 1.0 );
     }
-    
 }
 
 //------------------------------------------------------------------------------------------
@@ -84,4 +85,44 @@ TEST( PnLs, PnLsAmplifier ) {
 }
 
 //------------------------------------------------------------------------------------------
+TEST( ITime, main ) {
+    EXPECT_EQ( ITime(""), 0.0 );
+    EXPECT_EQ( ITime("00:00"), 0.0 );
+    EXPECT_EQ( ITime("10:00"), 36000.0 );
+    EXPECT_EQ( ITime("10:01:01"), 36061.0 );
+    EXPECT_EQ( ITime(1592826299), 42299.0 ); //Mon, 22 Jun 2020 11:44:59 GMT
+}
 
+//------------------------------------------------------------------------------------------
+TEST( VolatilityBuffer, main ) {
+    TVolatilityBuffer<double> lbuf(5);
+    EXPECT_FALSE( lbuf.isFill() );
+    EXPECT_TRUE( std::isnan(lbuf.getMax()) );
+    for (size_t i = 0; i < 4; i++) {
+        EXPECT_FALSE( lbuf.add( ToDouble(i) ) );
+        EXPECT_TRUE( std::isnan(lbuf.getErr()) );
+    }
+    EXPECT_TRUE( lbuf.add( ToDouble(4) ) );
+    EXPECT_NEAR( lbuf.getErr(), 0.7559289, 0.0000001 );
+    EXPECT_EQ( lbuf.getMin(), 0 );
+    EXPECT_EQ( lbuf.getMax(), 4 );
+    EXPECT_EQ( lbuf.getMean(), 2 );
+}
+
+//------------------------------------------------------------------------------------------
+TEST( VolatilityBarBuffer, main ) {
+    TVolatilityBarBuffer lbuf(5);
+    EXPECT_FALSE( lbuf.isFill() );
+    EXPECT_TRUE( std::isnan(lbuf.getMax()) );
+    for (size_t i = 0; i < 4; i++) {
+        EXPECT_FALSE( lbuf.add( TSimpleBar{gStartingTime+ToDouble(i),ToDouble(i),ToDouble(i),ToDouble(i),ToDouble(i),1.0} ) );
+        EXPECT_TRUE( std::isnan(lbuf.getErr()) );
+    }
+    EXPECT_TRUE( lbuf.add( TSimpleBar{gStartingTime+4.0,4.0,4.0,4.0,4.0,1.0} ) );
+    //EXPECT_NEAR( lbuf.getErr(), 0.7559289, 0.0000001 );
+    EXPECT_EQ( lbuf.getMin(), 0 );
+    EXPECT_EQ( lbuf.getMax(), 4 );
+    EXPECT_EQ( lbuf.getMean(), 0 );
+}
+
+//------------------------------------------------------------------------------------------
