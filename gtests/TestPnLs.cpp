@@ -126,3 +126,31 @@ TEST( VolatilityBarBuffer, main ) {
 }
 
 //------------------------------------------------------------------------------------------
+TEST( VolatilityBarRollBuffer, main ) {
+    TVolatilityBarRollBuffer lbuf(5);
+    EXPECT_FALSE( lbuf.isFill() );
+    
+    for (size_t i = 0; i < 4; i++) {
+        EXPECT_FALSE( lbuf.add( TSimpleBar{gStartingTime+ToDouble(i),ToDouble(i)*2+1.0,ToDouble(i)*2+1.0,ToDouble(i),ToDouble(i),1.0} ) );
+        EXPECT_TRUE( std::isnan(lbuf.getErr()) );
+    }
+    EXPECT_TRUE( lbuf.add( TSimpleBar{gStartingTime+4.0,4.0,5.0,4.0,4.0,1.0} ) );
+
+    EXPECT_EQ( lbuf.getMin(), 1.0 );
+    EXPECT_EQ( lbuf.getMax(), 4.0 );
+    EXPECT_TRUE( lbuf.isFill() );
+
+    EXPECT_EQ( lbuf.getMean(), 2.2 );
+    EXPECT_NEAR( lbuf.getErr(), 0.623355, 0.000001 );
+    //d <- c(1,2,3,4,1);sqrt(sum((d - mean(d))^2)/(length(d)-1.5))/sqrt(length(d))
+
+    for (size_t i = 0; i < 4; i++) {
+        EXPECT_TRUE( lbuf.add( TSimpleBar{gStartingTime+ToDouble(i),ToDouble(i)+1.0,ToDouble(i)+1.0,ToDouble(i),ToDouble(i),1.0} ) );
+        EXPECT_TRUE( lbuf.isFill() );
+    }
+
+    EXPECT_EQ( lbuf.getMean(), 1.0 );
+    EXPECT_NEAR( lbuf.getErr(), 0.0, 0.000001 );
+}
+
+//------------------------------------------------------------------------------------------
