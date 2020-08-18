@@ -2,7 +2,7 @@
  * \file RollRange.h
  * \brief Модуль реализующий перекатывающиеся индикатор Min-Max Range
  * \since 2016-10-10
- * \date 2019-11-13
+ * \date 2020-08-18
  * Модуль заимствован с https://bitbucket.org/quanttools/quanttools
  * (+) RollRange_with_tollerance [kan@kansoftware.ru]
  */
@@ -37,15 +37,22 @@ class RollRange {
         std::vector< double > quantileHistory;
         
         const double fBadValue;
+        const size_t fArrayReserve = 1000; 
 
     public:
 
         RollRange( const size_t aN, const double aP = 1.0, const double aBadValue = -333333.33 ) :
             n( aN ),
             p( aP ),
-            fBadValue( aBadValue ) {
+            fBadValue( aBadValue ),
+            fArrayReserve( std::max(aN, 1000UL) ) {
             if (n < 1) throw std::invalid_argument("n must be greater than 0");
             if (p < 0.0 or p > 1.0) throw std::invalid_argument("p must be in [0,1]");
+            
+
+            minHistory.reserve( fArrayReserve );
+            maxHistory.reserve( fArrayReserve );
+            quantileHistory.reserve( fArrayReserve );
         }
 
         void Add( const double value ) {
@@ -54,22 +61,26 @@ class RollRange {
             windowSorted.insert(value);
 
             if (window.size() > n) {
-
                 windowSorted.erase(windowSorted.find(window.front()));
                 window.pop();
-
             }
             range.min = *windowSorted.begin();
             range.max = *std::prev(windowSorted.end());
-            if( IsFormed() ) range.quantile = ( p >= 0.5 ) ?
+
+            if( IsFormed() ){
+                range.quantile = ( p >= 0.5 ) ?
                     *std::next( windowSorted.rbegin(), Trunc((1.0 - p) * ToDouble(n) )  ) 
                     :
                     *std::next( windowSorted.begin(), Trunc(p * ToDouble(n) ) );
 
-            IsFormed() ? minHistory.push_back(range.min) : minHistory.push_back( fBadValue );
-            IsFormed() ? maxHistory.push_back(range.max) : maxHistory.push_back( fBadValue );
-            IsFormed() ? quantileHistory.push_back(range.quantile) : quantileHistory.push_back( fBadValue );
-
+                minHistory.push_back( range.min );
+                maxHistory.push_back( range.max );
+                quantileHistory.push_back( range.quantile );
+            } else {
+                minHistory.push_back( fBadValue );
+                maxHistory.push_back( fBadValue );
+                quantileHistory.push_back( fBadValue );
+            }
         }
 
         bool IsFormed() const {
@@ -95,8 +106,15 @@ class RollRange {
         void Reset() {
             window={};
             windowSorted.clear();
-        }
 
+            minHistory.clear();
+            maxHistory.clear();
+            quantileHistory.clear();
+
+            minHistory.reserve( fArrayReserve );
+            maxHistory.reserve( fArrayReserve );
+            quantileHistory.reserve( fArrayReserve );
+        }
 };
 
 class RollRange_with_tollerance {
