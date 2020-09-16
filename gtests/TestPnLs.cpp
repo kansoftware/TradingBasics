@@ -5,6 +5,7 @@
 #include "DelphisRound.h"
 #include "VolatilityBuffer.h"
 #include "VolatilityBarBuffer.h"
+#include "RubberBuffer.h"
 
 //------------------------------------------------------------------------------------------
 TPriceSeries GetSimplePnl(){
@@ -153,4 +154,22 @@ TEST( VolatilityBarRollBuffer, main ) {
     EXPECT_NEAR( lbuf.getErr(), 0.0, 0.000001 );
 }
 
+//------------------------------------------------------------------------------------------
+TEST( RubberBuffer, main ) {
+    TRubberBuffer<double> lbuf(3);
+    EXPECT_FALSE( lbuf.isFill() );
+    EXPECT_FALSE( lbuf.calcStats() );
+    for (size_t i = 1; i < 11; i++) {
+        lbuf.add(ToDouble( i ));
+    }
+
+    EXPECT_TRUE( lbuf.isFill() );
+    EXPECT_TRUE( std::isnan(lbuf.getSD()) );
+
+    EXPECT_TRUE( lbuf.calcStats() );
+    EXPECT_NEAR( lbuf.getSD(), 3.02765, 0.00001 );
+    EXPECT_EQ( lbuf.getMean(), 5.5 );
+    EXPECT_EQ( lbuf.getMin(), 1.0 );
+    EXPECT_EQ( lbuf.getMax(), 10.0 );
+}
 //------------------------------------------------------------------------------------------
