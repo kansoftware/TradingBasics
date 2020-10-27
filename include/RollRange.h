@@ -2,7 +2,7 @@
  * \file RollRange.h
  * \brief Модуль реализующий перекатывающиеся индикатор Min-Max Range
  * \since 2016-10-10
- * \date 2020-08-18
+ * \date 2020-09-24
  * Модуль заимствован с https://bitbucket.org/quanttools/quanttools
  * (+) RollRange_with_tollerance [kan@kansoftware.ru]
  */
@@ -115,6 +115,12 @@ class RollRange {
             maxHistory.reserve( fArrayReserve );
             quantileHistory.reserve( fArrayReserve );
         }
+
+        double GetDelta(){
+            assert( IsFormed() );
+            const double lFirstValue = window.front();
+            return (lFirstValue!=0.0) ? (window.back() / lFirstValue - 1.0) : NAN;
+        }
 };
 
 class RollRange_with_tollerance {
@@ -166,6 +172,39 @@ class RollRange_with_tollerance {
         void Reset() {
             window={};
             windowSorted.clear();
+        }
+};
+
+class RollSeesaw {
+    private:
+        const size_t n;
+        std::queue< double > window;
+
+    public:
+        RollSeesaw( const size_t aN ) :
+            n( aN ) {
+            if (n < 1) throw std::invalid_argument("n must be greater than 0");
+        }
+
+        void Add( const double value ) {
+            window.push(value);
+            if (window.size() > n) {
+                window.pop();
+            }
+        }
+
+        bool IsFormed() const {
+            return window.size() == n;
+        }
+
+        void Reset() {
+            window={};
+        }
+
+        double GetDelta(){
+            assert( IsFormed() );
+            const double lFirstValue = window.front();
+            return (lFirstValue!=0.0) ? (window.back() / lFirstValue - 1.0) : NAN;
         }
 };
 

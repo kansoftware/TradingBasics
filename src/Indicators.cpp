@@ -1,12 +1,10 @@
-// This is an independent project of an individual developer. Dear PVS-Studio, please check it.
-// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-
 /** 
- * File:   Indicators.cpp
- * Author: kan
- * 
- * Created on 10.11.2015
- * @lastupdate 2020.02.14
+ * This is an independent project of an individual developer. Dear PVS-Studio, please check it.
+ * PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+ * \file Indicators.cpp
+ * \author kan <kansoftware.ru>
+ * \since 2015-11-10
+ * \date 2020-10-21
  */
 
 #include <cmath>
@@ -17,6 +15,7 @@
 #include "Forecasting.h"
 #include "PnlAction.h"
 #include "RollRange.h"
+#include "RollRangeBar.h"
 
 #include "Indicators.h"
 
@@ -597,6 +596,52 @@ bool _RollMinMax(
         return false;
     }
     
+    aoMin.reserve( lDataSize );
+    aoMax.reserve( lDataSize );
+
+    TRollRangeBar lRoller( lPeriod );
+    for( size_t i=0; i<lPeriod; ++i ){
+        const TSimpleBar& lBar = aBars[ i ];
+        aoMin.emplace_back( lBar.DateTime, GetBadPrice(), 0.0 );
+        aoMax.emplace_back( lBar.DateTime, GetBadPrice(), 0.0 );
+        lRoller.Add( lBar );
+    }
+    
+    for( size_t i=lPeriod; i<lDataSize; ++i ){
+        const TSimpleBar& lBar = aBars[ i ];
+        lRoller.Add( lBar );
+        assert( lRoller.IsFormed() );
+
+        const TRollRangeBar::TRange lRange( lRoller.GetValue() );
+
+        aoMin.emplace_back( lBar.DateTime, lRange.first, (IsEqual(lRange.first, lBar.Low) ? 1.0 : (aTouch?0.0:1.0)) );
+        aoMax.emplace_back( lBar.DateTime, lRange.second, (IsEqual(lRange.second, lBar.High) ? 1.0 : (aTouch?0.0:1.0)) );
+    }
+    
+    if( aTouch ){
+        for( size_t i=lPeriod; i<lDataSize; ++i ){
+            aoMax[ i ].Volume = ( isPositiveValue(aoMax[ i ].Volume) and IsEqual(aoMax[ i ].Price, aoMax[ i-1 ].Price) ) ? (aoMax[ i ].Volume + aoMax[ i-1 ].Volume) : 0.0;
+            aoMin[ i ].Volume = ( isPositiveValue(aoMin[ i ].Volume) and IsEqual(aoMin[ i ].Price, aoMin[ i-1 ].Price) ) ? (aoMin[ i ].Volume + aoMin[ i-1 ].Volume) : 0.0;            
+        }
+    }
+    
+    return true;
+}
+
+//------------------------------------------------------------------------------------------
+bool _RollMinMax_old( 
+    const TBarSeries & aBars, 
+    const int aPeriod, 
+    TPriceSeries & aoMin, 
+    TPriceSeries & aoMax,
+    const bool aTouch ) {
+
+    const size_t lDataSize = aBars.size();
+    const size_t lPeriod = ToSize_t( aPeriod );
+    if( ( aPeriod <= 0 ) or lDataSize < lPeriod ) {
+        return false;
+    }
+    
     aoMin.resize( lDataSize );
     aoMax.resize( lDataSize );
 
@@ -644,7 +689,6 @@ bool _RollMinMax(
             aoMin[ i ].Volume = ( isPositiveValue(aoMin[ i ].Volume) and IsEqual(aoMin[ i ].Price, aoMin[ i-1 ].Price) ) ? (aoMin[ i ].Volume + aoMin[ i-1 ].Volume) : 0.0;            
         }
     }
-    
     
     return true;
 }

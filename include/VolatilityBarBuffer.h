@@ -1,10 +1,9 @@
-/* 
- * File:   VolatilityBarBuffer.h
- * Author: kan
- *
- * Created on 2020-06-23
+/** 
+ * \file VolatilityBarBuffer.h
+ * \author kan <kansoftware.ru>
+ * \since 2020-06-23
  * \date 2020-06-23
- * По заранее заполненному буферу рассчитывает min/max/ATR/err(TR), полный аналог VolatilityBuffer.h
+ * \brief По заранее заполненному буферу рассчитывает min/max/ATR/err(TR), полный аналог VolatilityBuffer.h
  */
 
 #ifndef VOLATILITYBARBUFFER_H

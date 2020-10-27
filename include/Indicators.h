@@ -49,6 +49,11 @@ bool _RollMinMax( const TBarSeries & aBars, const int aPeriod,
             TPriceSeries & aoMax,
             const bool aTouch = false );
 
+bool _RollMinMax_old( const TBarSeries & aBars, const int aPeriod, 
+            TPriceSeries & aoMin, 
+            TPriceSeries & aoMax,
+            const bool aTouch = false );
+
 bool _SupportRessistance( 
     const TBarSeries & aBars, 
     const int aPeriod,

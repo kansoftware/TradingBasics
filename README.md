@@ -1,12 +1,15 @@
 # Trading basics library
 
 ## About
+
 This is classes, types and functions for creating trading strategies and bots with C++ compilers.
 
 ## Depends
+
 git cmake gcc g++ libboost-math-dev
 
 ## Installing
+
 ```bash
 git clone https://github.com/kansoftware/TradingBasics.git
 cd TradingBasics
@@ -19,11 +22,12 @@ cmake --build . -- -j 4
 For correct work need package libboost-math-dev or you can set BOOST_ROOT variable.
 
 ```bash
-cmake -DBOOST_ROOT=/you_path_to_boost/boost .. 
+cmake -DBOOST_ROOT=/you_path_to_boost/boost ..
 
 ```
 
 ## Testing
+
 ```bash
 cd ..
 mkdir buildtest; cd buildtest
@@ -33,10 +37,11 @@ make test
 
 ```
 
-
 ## Usage
+
 Into your project include folder TradingBasics/include. Add builded lib to your project.
 The sample for cmake:
+
 ```cmake
 set( TRADING_BASICS_PATH "#YOUR_PATH_TO#/TradingBasics/" )
 
@@ -49,7 +54,9 @@ set_target_properties(TRADING_BASICS PROPERTIES
 target_link_libraries( #YOUR_TARGET_PROJECT# TRADING_BASICS )
 
 ```
+
 or
+
 ```cmake
 set( TRADING_BASICS_PATH "#YOUR_PATH_TO#/TradingBasics/" )
 include_directories( "${TRADING_BASICS_PATH}include" )

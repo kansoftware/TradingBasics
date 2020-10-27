@@ -206,7 +206,7 @@ TPrice PnLsToMoneyStatValue( const TPriceSeries & aPnl, const bool aUseVolume, c
     
     const double lStudAN = Student_t_value( lSize, aQuantile ) / sqrt( ToDouble(N) );
 
-    return (mean - sqrt(lstdev)*lStudAN)*ToDouble(lSize);
+    return (mean - sqrt(lstdev)*lStudAN)*ToDouble(N);
 }
 
 //------------------------------------------------------------------------------------------
@@ -233,7 +233,7 @@ TPrice PnLsToMoneyStatValueGost( const TPriceSeries & aPnl, const bool aUseVolum
     
     lstdev /= (ToDouble(lSize) - 1.5);//ГОСТ Р 8.736-2011
     
-    return ( mean - sqrt( lstdev ) / sqrt( ToDouble(N) ) )*ToDouble(lSize);
+    return ( mean - sqrt( lstdev ) / sqrt( ToDouble(lSize) ) )*ToDouble(N);
 }
 
 //------------------------------------------------------------------------------------------
@@ -257,7 +257,7 @@ TPrice PnLsToMoneyMonteCarlo( const TPriceSeries & aPnl, const bool aUseVolume, 
         lResult = std::min(lResult, lPnlTest);
     }
     
-    return lResult * ToDouble(lSize);
+    return lResult * ToDouble(N);
 }
 
 //------------------------------------------------------------------------------------------
@@ -288,7 +288,7 @@ TPrice PnLsToMoneyMonteCarloQuantile( const TPriceSeries & aPnl, const bool aUse
     
     const TPrice lResult = *iter;
     
-    return lResult * ToDouble(lSize);    
+    return lResult * ToDouble(N);    
 }
 
 //------------------------------------------------------------------------------------------
