@@ -140,7 +140,11 @@ inline std::string getTimeZone(const Rcpp::NumericMatrix & aData){
 //------------------------------------------------------------------------------------------
 
 inline TPriceSeries XtsToPriceSeries( const Rcpp::NumericMatrix & aData, const TMAPoint aType, std::string & aoTZone ) {
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wconversion"
     const Rcpp::NumericVector lIndex( aData.attr("index") );
+    #pragma GCC diagnostic pop
+
     aoTZone = getTimeZone( aData );
 
     if( aData.ncol() < 5 ) {
@@ -251,7 +255,10 @@ inline TBarSeries XtsToBarSeries( const Rcpp::NumericMatrix & aBar ) {
     lResult.reserve( lDataSize );
     
     if( lDataSize > 0 ) {
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wconversion"
         const Rcpp::NumericVector lIndex( aBar.attr("index") );
+        #pragma GCC diagnostic pop
 
         for( int lRowNum = 0; lRowNum < lDataSize; ++lRowNum ) {
             lResult.push_back({
@@ -275,7 +282,10 @@ inline TPriceSeries IndicatorToPriceSeries( const Rcpp::NumericMatrix & aData  )
     lResult.reserve( lDataSize );
     
     if( lDataSize > 0 ) {
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wconversion"
         const Rcpp::NumericVector lIndex( aData.attr("index") );
+        #pragma GCC diagnostic pop
 
         for( int lRowNum = 0; lRowNum < lDataSize; ++lRowNum ) {
             lResult.emplace_back(
