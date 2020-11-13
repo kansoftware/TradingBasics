@@ -44,7 +44,7 @@ bool IsOneHour( const TInnerDate aLeft, const TInnerDate aRight, const double aD
 
 //------------------------------------------------------------------------------------------
 bool IsValidBar( const TSimpleBar & aBar ) {
-    return IsGreat( aBar.Volume, -gAbsoluteZero )
+    return IsGreat( aBar.Volume, -2.0 * gAbsoluteZero ) // >= 0
            and IsValidPrice( aBar.Open )
            and IsValidPrice( aBar.High )
            and IsValidPrice( aBar.Low )

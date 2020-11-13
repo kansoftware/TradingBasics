@@ -53,6 +53,8 @@
         "streambuf": "cpp",
         "cfenv": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "any": "cpp",
+        "typeindex": "cpp"
     }
 }
