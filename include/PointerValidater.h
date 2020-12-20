@@ -3,7 +3,7 @@
  * \brief Модуль с шаблонами для работы с указателями
  * \author kan <kansoftware.ru>
  * \since 2014-04-22
- * \date 2019-09-23
+ * \date 2020-12-16
  * Об атомарности исполнения функций должен заботиться программист
  */
 
@@ -43,7 +43,7 @@ template<typename T> constexpr bool isValidPointer( const std::shared_ptr< T > &
     #ifdef NDEBUG
         return aPointer.operator bool();
     #else
-        return isValidPointer( aPointer.get() );
+        return aPointer and isValidPointer( aPointer.get() );
     #endif
 }
 

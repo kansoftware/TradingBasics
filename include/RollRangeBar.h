@@ -3,7 +3,8 @@
  * \brief Модуль реализующий перекатывающиеся индикатор Min-Max Range для баров
  * \author kan <kansoftware.ru>
  * \since 2020-10-21
- * \date 2020-10-21
+ * \date 2020-12-08
+ * \note Non thread-safe
  */
 
 #ifndef ROLLRANGEBAR_H
@@ -52,6 +53,9 @@ class TRollRangeBar {
             } else {
                 History.push_back( fBadValue );
             }
+
+            fCached_m = false;
+            fCached_e = false;
         }
 
         bool IsFormed() const {
@@ -73,6 +77,9 @@ class TRollRangeBar {
 
             History.clear();
             History.reserve( fArrayReserve );
+
+            fCached_m = false;
+            fCached_e = false;
         }
 
         double getMean() const {
@@ -80,6 +87,10 @@ class TRollRangeBar {
                 return NAN;
             }
             
+            if(fCached_m){
+                return fMean;
+            }
+
             double lmv = 0.0;
             size_t ln = 0;
             for( const auto& lv : History ){
@@ -88,13 +99,19 @@ class TRollRangeBar {
                 ln++;
             }
 
-            return lmv / static_cast<double>(ln);
+            fMean = lmv / static_cast<double>(ln);
+            fCached_m = true;
+            return fMean;
         }
 
-        double getErr()const {
+        double getErr() const {
             const double lMean = getMean();
             if( std::isnan(lMean) ){
                 return NAN;
+            }
+
+            if(fCached_e){
+                return fErr;
             }
 
             double lsd = 0.0;
@@ -108,7 +125,9 @@ class TRollRangeBar {
             const double lc = static_cast<double>(ln);
             lsd /= (lc-1.5);
             
-            return sqrt(lsd) / sqrt(lc);
+            fErr = sqrt(lsd) / sqrt(lc);
+            fCached_e = true;
+            return fErr;
         }
 
     private:
@@ -123,6 +142,11 @@ class TRollRangeBar {
         const TRange fBadValue;
         TRange range;
         const size_t fArrayReserve = 1000;
+        
+        mutable bool fCached_m = false;
+        mutable bool fCached_e = false;
+        mutable double fMean = NAN;
+        mutable double fErr = NAN;
 };
 
 #endif //ROLLRANGEBAR_H
