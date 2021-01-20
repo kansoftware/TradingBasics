@@ -125,6 +125,7 @@ class RollRange {
         }
 };
 
+
 class RollRange_with_tollerance {
     private:
         Range range;
@@ -177,6 +178,7 @@ class RollRange_with_tollerance {
         }
 };
 
+
 class RollSeesaw {
     private:
         const size_t n;
@@ -209,6 +211,7 @@ class RollSeesaw {
             return (lFirstValue!=0.0) ? (window.back() / lFirstValue - 1.0) : NAN;
         }
 };
+
 
 class RollRangeLazy {
     
@@ -296,7 +299,7 @@ class RollRangeLazy {
             assert( IsFormed() );
             const double lFirstValue = window.front();
             return (lFirstValue!=0.0) ? (window.back() / lFirstValue - 1.0) : NAN;
-        }
+        } 
 };
 
 #endif //ROLLRANGE_H
