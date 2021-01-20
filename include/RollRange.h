@@ -2,7 +2,7 @@
  * \file RollRange.h
  * \brief Модуль реализующий перекатывающиеся индикатор Min-Max Range
  * \since 2016-10-10
- * \date 2020-09-24
+ * \date 2021-01-20
  * Модуль заимствован с https://bitbucket.org/quanttools/quanttools
  * (+) RollRange_with_tollerance [kan@kansoftware.ru]
  */
@@ -15,6 +15,7 @@
 #include <set>
 #include <vector>
 #include <algorithm>
+#include <iterator>
 
 #include "DelphisRound.h"
 
@@ -28,7 +29,8 @@ class RollRange {
     private:
         Range range;
         const size_t n;
-        const double p;
+        const bool backSearch;
+        const int pN;
         std::queue< double > window;
         std::multiset< double > windowSorted;
 
@@ -43,11 +45,12 @@ class RollRange {
 
         RollRange( const size_t aN, const double aP = 1.0, const double aBadValue = -333333.33 ) :
             n( aN ),
-            p( aP ),
+            backSearch(aP >= 0.5),
+            pN( (backSearch ? Trunc((aP - 1.0) * ToDouble(n) ) : Trunc(aP * ToDouble(n) ) ) ),
             fBadValue( aBadValue ),
             fArrayReserve( std::max(aN, 1000UL) ) {
             if (n < 1) throw std::invalid_argument("n must be greater than 0");
-            if (p < 0.0 or p > 1.0) throw std::invalid_argument("p must be in [0,1]");
+            if (aP < 0.0 or aP > 1.0) throw std::invalid_argument("p must be in [0,1]");
             
 
             minHistory.reserve( fArrayReserve );
@@ -68,10 +71,9 @@ class RollRange {
             range.max = *std::prev(windowSorted.end());
 
             if( IsFormed() ){
-                range.quantile = ( p >= 0.5 ) ?
-                    *std::next( windowSorted.rbegin(), Trunc((1.0 - p) * ToDouble(n) )  ) 
-                    :
-                    *std::next( windowSorted.begin(), Trunc(p * ToDouble(n) ) );
+                auto it = backSearch ? windowSorted.cend() : windowSorted.cbegin();
+                std::advance(it, pN);
+                range.quantile = *it;
 
                 minHistory.push_back( range.min );
                 maxHistory.push_back( range.max );
@@ -199,6 +201,95 @@ class RollSeesaw {
 
         void Reset() {
             window={};
+        }
+
+        double GetDelta(){
+            assert( IsFormed() );
+            const double lFirstValue = window.front();
+            return (lFirstValue!=0.0) ? (window.back() / lFirstValue - 1.0) : NAN;
+        }
+};
+
+class RollRangeLazy {
+    
+    private:
+        Range range;
+        const size_t n;
+        const bool backSearch;
+        const int pN;
+        std::queue< double > window;
+        std::multiset< double > windowSorted;
+
+        std::vector< double > minHistory;
+        std::vector< double > maxHistory;
+                
+        const double fBadValue;
+        const size_t fArrayReserve = 1000; 
+
+    public:
+        RollRangeLazy( const size_t aN, const double aP = 1.0, const double aBadValue = -333333.33 ) :
+            n( aN ),
+            backSearch(aP >= 0.5),
+            pN( (backSearch ? Trunc((aP - 1.0) * ToDouble(n) ) : Trunc(aP * ToDouble(n) ) ) ),
+            fBadValue( aBadValue ),
+            fArrayReserve( std::max(aN, 1000UL) ) {
+            if (n < 1) throw std::invalid_argument("n must be greater than 0");
+            if (aP < 0.0 or aP > 1.0) throw std::invalid_argument("p must be in [0,1]");
+            
+            minHistory.reserve( fArrayReserve );
+            maxHistory.reserve( fArrayReserve );
+        }
+
+        void Add( const double value ) {
+
+            window.push(value);
+            windowSorted.insert(value);
+
+            if (window.size() > n) {
+                windowSorted.erase(windowSorted.find(window.front()));
+                window.pop();
+            }
+            range.min = *windowSorted.begin();
+            range.max = *std::prev(windowSorted.end());
+
+            if( IsFormed() ){
+                minHistory.push_back( range.min );
+                maxHistory.push_back( range.max );
+            } else {
+                minHistory.push_back( fBadValue );
+                maxHistory.push_back( fBadValue );
+            }
+        }
+
+        bool IsFormed() const {
+            return window.size() == n;
+        }
+
+        Range GetValue() {
+            auto it = backSearch ? windowSorted.cend() : windowSorted.cbegin();
+            std::advance(it, pN);
+            range.quantile = *it;
+
+            return range;
+        }
+
+        std::vector< double > GetMinHistory() const {
+            return minHistory;
+        }
+
+        std::vector< double > GetMaxHistory() const {
+            return maxHistory;
+        }
+
+        void Reset() {
+            window={};
+            windowSorted.clear();
+
+            minHistory.clear();
+            maxHistory.clear();
+
+            minHistory.reserve( fArrayReserve );
+            maxHistory.reserve( fArrayReserve );
         }
 
         double GetDelta(){
