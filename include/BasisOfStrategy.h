@@ -3,7 +3,7 @@
  * \brief Модуль реализующий объекты для одно-ногих стратегий
  * \author kan <kansoftware.ru>
  * \since 2015-11-11
- * \date 2020-06-22
+ * \date 2021-10-29
  * Модуль используется неизменно в проектах TradeBot и [R] BackTester
  */
 
@@ -81,7 +81,7 @@ TBarSeries _CreateBars( const TBarSeries & aBars, const TBarPeriod aBarPeriod );
 
 std::string DateToStr( const TInnerDate aDate );
 TInnerTime ITime( const TInnerDate aDate );
-TInnerTime ITime( const std::string aTime );
+TInnerTime ITime( const std::string& aTime );
 
 std::ostream& operator<<( std::ostream &out, const TSimpleBar &aBar );
 std::ostream& operator<<( std::ostream &out, const TSimpleTick &aTick );

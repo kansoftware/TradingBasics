@@ -191,15 +191,15 @@ std::string DateToStr( const TInnerDate aDate ) {
 
 //------------------------------------------------------------------------------------------
 TInnerTime ITime( const TInnerDate aDate ) {
-    const time_t lTime = Round( aDate );
-    struct tm * ltimeinfo = localtime (&lTime);
+    // const time_t lTime = Round( aDate );
+    // struct tm * ltimeinfo = localtime (&lTime);
     
-    return ltimeinfo->tm_hour * 3600 + ltimeinfo->tm_min * 60 + ltimeinfo->tm_sec;
-    //return  ToDouble(ToInt(aDate) % ToInt(gOneDay));
+    // return ltimeinfo->tm_hour * 3600 + ltimeinfo->tm_min * 60 + ltimeinfo->tm_sec;
+    return  ToDouble(ToInt(aDate) % ToInt(gOneDay));
 }
 
 //------------------------------------------------------------------------------------------
-TInnerTime ITime( const std::string aTime ) {
+TInnerTime ITime( const std::string& aTime ) {
     std::string s{aTime};
     const std::string delimiter{":"};
     int lHours;
