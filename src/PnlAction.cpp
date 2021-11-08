@@ -590,7 +590,7 @@ TDoubles ToDoublesArray( const TPriceSeries & aPriceSeries ) {
 }
 
 //------------------------------------------------------------------------------------------
-TPriceSeries PnlsToDaily( const TPriceSeries & aPnls ) {
+TPriceSeries PnlsToDaily( const TPriceSeries & aPnls, const bool aCumSum ) {
     
     if( aPnls.empty() ) {
         return TPriceSeries();
@@ -617,8 +617,10 @@ TPriceSeries PnlsToDaily( const TPriceSeries & aPnls ) {
         lResult[ lDealDate ] = lDayDeal;
     }
     
-    for( size_t i = 1; i < lResult.size(); ++i ){
-        lResult[i].Price += lResult[i-1].Price;
+    if(aCumSum){
+        for( size_t i = 1; i < lResult.size(); ++i ){
+            lResult[i].Price += lResult[i-1].Price;
+        }
     }
     
     return lResult;

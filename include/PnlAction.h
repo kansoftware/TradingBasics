@@ -3,7 +3,7 @@
  * \brief Модуль хранящий в себе типы периодов для баров и основные методы работы с ними
  * \author kan <kansoftware.ru>
  * \since 2015-11-11
- * \date 2019-11-18
+ * \date 2021-11-08
  * Модуль используется неизменно в проектах TradeBot и [R] BackTester
  */
 
@@ -116,7 +116,7 @@ TPrice DealsToPNLCoefficient(
     const size_t aMinDeals = gMinDealsForAllTime,
     const size_t aQuantTime = 86400 * 7 );
 
-TPriceSeries PnlsToDaily( const TPriceSeries & aPnls );
+TPriceSeries PnlsToDaily( const TPriceSeries & aPnls, const bool aCumSum = true );
 bool IsGrows( const TPriceSeries & aDailyPnls, const size_t aPeriod, const size_t aTollerance = 1 );
 
 #endif //BACKTESTER_PNLACTION_H
