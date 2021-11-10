@@ -199,14 +199,15 @@ TPrice PnLsToMoneyStatValue( const TPriceSeries & aPnl, const bool aUseVolume, c
     
     TPrice lstdev = 0.0;
     for( size_t i=0; i<lSize; ++i ){
-        lstdev += pow(lPnl[i] - mean, 2);
+        const double ld = lPnl[i] - mean;
+        lstdev += ld*ld;
     }
     
-    lstdev /= ToDouble(lSize);
+    lstdev /= ToDouble(lSize-1);
     
-    const double lStudAN = Student_t_value( lSize, aQuantile ) / sqrt( ToDouble(N) );
+    const double ltStud = Student_t_value( lSize, aQuantile );
 
-    return (mean - sqrt(lstdev)*lStudAN)*ToDouble(N);
+    return (mean - ltStud * sqrt(lstdev/ToDouble(N))) * ToDouble(N);
 }
 
 //------------------------------------------------------------------------------------------
@@ -228,12 +229,13 @@ TPrice PnLsToMoneyStatValueGost( const TPriceSeries & aPnl, const bool aUseVolum
     
     TPrice lstdev = 0.0;
     for( size_t i=0; i<lSize; ++i ){
-        lstdev += pow(lPnl[i] - mean, 2);
+        const double ld = lPnl[i] - mean;
+        lstdev += ld*ld;
     }
     
     lstdev /= (ToDouble(lSize) - 1.5);//ГОСТ Р 8.736-2011
-    
-    return ( mean - sqrt( lstdev ) / sqrt( ToDouble(lSize) ) )*ToDouble(N);
+    const double ltStud = 2.04 ; //N>30, P=95%
+    return ( mean - ltStud * sqrt( lstdev / ToDouble(lSize) ) ) * ToDouble(N);
 }
 
 //------------------------------------------------------------------------------------------
