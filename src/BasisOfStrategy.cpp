@@ -39,7 +39,9 @@ bool IsOneDay( const TInnerDate aLeft, const TInnerDate aRight) {
 //------------------------------------------------------------------------------------------
 bool IsOneHour( const TInnerDate aLeft, const TInnerDate aRight, const double aDuration ) {
     assert( isPositiveValue( aDuration ) );
-    return IsLess( std::fabs( aLeft - aRight ), gOneHour*aDuration + 1.0 );
+    //return IsLess( std::fabs( aLeft - aRight ), gOneHour*aDuration + 1.0 );
+
+    return Trunc( aLeft / (gOneHour*aDuration) ) == Trunc( aRight / (gOneHour*aDuration) );
 }
 
 //------------------------------------------------------------------------------------------
