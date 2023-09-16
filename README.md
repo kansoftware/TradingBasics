@@ -14,7 +14,7 @@ git cmake gcc g++ libboost-math-dev
 git clone https://github.com/kansoftware/TradingBasics.git
 cd TradingBasics
 mkdir build; cd build
-cmake -DCMAKE_C_FLAGS="-O3 -march=native -DNDEBUG" -DCMAKE_CXX_FLAGS="-O3 -march=native -DNDEBUG" ..
+cmake -DCMAKE_C_FLAGS="-march=native -DNDEBUG" -DCMAKE_CXX_FLAGS="-march=native -DNDEBUG" ..
 cmake --build . -- -j 4
 
 ```
@@ -29,12 +29,10 @@ cmake -DBOOST_ROOT=/you_path_to_boost/boost ..
 ## Testing
 
 ```bash
-cd ..
-mkdir buildtest; cd buildtest
 cmake -DBUILD_TESTING=ON ..
-cmake --build . -- -j 4
-make test
-
+cmake --build . -- -j `nproc`
+ctest
+cpack -G DEB
 ```
 
 ## Usage
