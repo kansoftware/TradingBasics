@@ -2,7 +2,7 @@
 
 ## About
 
-This is classes, types and functions for creating trading strategies and bots with C++ compilers.
+These classes, types and functions are suitable for creating trading strategies and bots using C++ compilers.
 
 ## Depends
 
@@ -19,7 +19,7 @@ cmake --build . -- -j 4
 
 ```
 
-For correct work need package libboost-math-dev or you can set BOOST_ROOT variable.
+To work correctly, you need the libboost-math-dev package or you can set the BOOST_ROOT variable.
 
 ```bash
 cmake -DBOOST_ROOT=/you_path_to_boost/boost ..
@@ -27,6 +27,9 @@ cmake -DBOOST_ROOT=/you_path_to_boost/boost ..
 ```
 
 ## Testing
+
+### Depends
+sudo apt-get install libgtest-dev
 
 ```bash
 cmake -DBUILD_TESTING=ON ..
@@ -37,28 +40,18 @@ cpack -G DEB
 
 ## Usage
 
-Into your project include folder TradingBasics/include. Add builded lib to your project.
-The sample for cmake:
+Include TradingBasics folders in your project. And build your project with the library.
 
-```cmake
-set( TRADING_BASICS_PATH "#YOUR_PATH_TO#/TradingBasics/" )
-
-add_library(TRADING_BASICS SHARED IMPORTED)
-set_target_properties(TRADING_BASICS PROPERTIES
-    IMPORTED_LOCATION "${TRADING_BASICS_PATH}build/libTradingBasics.a"
-    INTERFACE_INCLUDE_DIRECTORIES "${TRADING_BASICS_PATH}include"
-)
-
-target_link_libraries( #YOUR_TARGET_PROJECT# TRADING_BASICS )
-
+Install package:
+```bash
+sudo apt -f TradingBasics-0.0.1-Linux.deb
 ```
 
-or
+Add the following lines to cmake:
 
 ```cmake
-set( TRADING_BASICS_PATH "#YOUR_PATH_TO#/TradingBasics/" )
-include_directories( "${TRADING_BASICS_PATH}include" )
-link_directories( "${TRADING_BASICS_PATH}build" )
+include_directories( /usr/include/kansoftware/)
+link_directories( /usr/lib/kansoftware/)
+target_link_libraries( #YOUR_TARGET_PROJECT# TradingBasics )
 
-target_link_libraries( #YOUR_TARGET_PROJECT# -lTradingBasics )
 ```
