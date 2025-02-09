@@ -1,5 +1,5 @@
-cmake_minimum_required( VERSION 3.7 )
-project( TradingBasics VERSION 0.0.1)
+cmake_minimum_required(VERSION 3.11)
+project( TradingBasics)
 
 option( BUILD_TESTING "BUILD_TESTING" OFF )
 option( USER_PEDANT "Show me lots of warrnings" OFF )
@@ -22,7 +22,7 @@ else()
 
 endif() 
 
-find_package( Boost 1.60 REQUIRED) #COMPONENTS math
+find_package(Boost REQUIRED) #  COMPONENTS math
 
 file( GLOB SRC_FILES "src/*.cpp")
 add_library( ${PROJECT_NAME} SHARED ${SRC_FILES})
