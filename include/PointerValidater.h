@@ -52,7 +52,7 @@ template<typename T> constexpr bool isValidPointer( const std::shared_ptr< T > &
  *  \brief Зачистка памяти
  */
 template<typename T> void FreeAndNil( T* &aPointer ) {
-    if( isValidPointer( aPointer ) ) {
+    if( aPointer != nullptr ) {
         delete aPointer;
     }
 
