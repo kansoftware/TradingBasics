@@ -50,7 +50,7 @@ template <class T, class Tin=T> class TVolatilityBuffer {
                     const T lMean = fMean / lc;
                     double lsd = 0.0;
                     for (auto& lv : fBuffer) {
-                        lsd += pow( lMean - lv, 2 );
+                        lsd += pow( lMean - lv, 2.0 );
                     }
                     
                     lsd /= (lc-1.5);

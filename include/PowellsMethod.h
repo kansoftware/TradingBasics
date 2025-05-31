@@ -41,7 +41,7 @@ class PowellsMethod {
         void   mnbrak(double &ax,double &bx,double &cx,double &fa,double &fb,double &fc);
         double brent(double ax,double bx,double cx,double &xmin);
         double f1dim(double x);
-        virtual double func(const TDoubles &p) { return(0); }
+        virtual double func(const TDoubles &) { return(0); }
 };
 
 #endif /* POWELLSMETHOD_H */

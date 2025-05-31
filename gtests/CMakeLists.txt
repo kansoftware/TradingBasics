@@ -18,7 +18,10 @@ target_link_libraries( ${PROJECT_NAME}
     TradingBasics
 )
 
-target_include_directories( ${PROJECT_NAME} PRIVATE "../include")
+target_include_directories( 
+    ${PROJECT_NAME} 
+    PRIVATE 
+        ../include)
 
 # add_test( ${PROJECT_NAME} ${PROJECT_NAME})
 include(GoogleTest)

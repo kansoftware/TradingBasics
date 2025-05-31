@@ -117,11 +117,11 @@ class RollRange {
             maxHistory.reserve( fArrayReserve );
             quantileHistory.reserve( fArrayReserve );
         }
-
+        
         double GetDelta(){
             assert( IsFormed() );
             const double lFirstValue = window.front();
-            return (lFirstValue!=0.0) ? (window.back() / lFirstValue - 1.0) : NAN;
+            return (std::fabs(lFirstValue) > gEpsilon) ? (window.back() / lFirstValue - 1.0) : NAN;
         }
 };
 
@@ -208,7 +208,7 @@ class RollSeesaw {
         double GetDelta(){
             assert( IsFormed() );
             const double lFirstValue = window.front();
-            return (lFirstValue!=0.0) ? (window.back() / lFirstValue - 1.0) : NAN;
+            return (std::fabs(lFirstValue) > gEpsilon) ? (window.back() / lFirstValue - 1.0) : NAN;
         }
 };
 
@@ -298,7 +298,7 @@ class RollRangeLazy {
         double GetDelta(){
             assert( IsFormed() );
             const double lFirstValue = window.front();
-            return (lFirstValue!=0.0) ? (window.back() / lFirstValue - 1.0) : NAN;
+            return (std::fabs(lFirstValue) > gEpsilon) ? (window.back() / lFirstValue - 1.0) : NAN;
         } 
 };
 

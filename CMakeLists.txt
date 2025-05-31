@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.7)
-project( TradingBasics VERSION 0.0.2)
+project( TradingBasics VERSION 0.0.3)
 
 option( BUILD_TESTING "BUILD_TESTING" OFF )
 option( USER_PEDANT "Show me lots of warrnings" OFF )
@@ -14,7 +14,7 @@ endif()
 if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
     set( CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g3 -gdwarf-2 -Og" )
     set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g3 -Og" )
-    message( WARNING "debug mode" )
+    message( STATUS "debug mode" )
 
 else()
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g0 -Ofast -fno-finite-math-only -DNDEBUG" )
@@ -27,7 +27,10 @@ find_package(Boost REQUIRED) #  COMPONENTS math
 file( GLOB SRC_FILES "src/*.cpp")
 add_library( ${PROJECT_NAME} SHARED ${SRC_FILES})
 
-target_include_directories( ${PROJECT_NAME} PUBLIC "include")
+target_include_directories( 
+    ${PROJECT_NAME} 
+    PUBLIC 
+        include)
 
 set_target_properties( ${PROJECT_NAME} PROPERTIES
     SOVERSION ${PROJECT_VERSION_MAJOR}

@@ -21,7 +21,7 @@
 #include "BasisOfStrategy.h"
 
 //------------------------------------------------------------------------------------------
-const std::string whitespaces (" \t\f\v\n\r");
+static const std::string whitespaces{" \t\f\v\n\r"};
 std::string trim( const std::string& str ) {
     const size_t first = str.find_first_not_of( whitespaces );
     if( std::string::npos == first ) {
@@ -127,6 +127,8 @@ TBarSeries _CreateBars( const TBarSeries & aBars, const TBarPeriod aBarPeriod ) 
     const double lOutBarPeriod = getBarPeriodLength( aBarPeriod );//0.0;
     
     TBarSeries oResuiltBarSeries;
+    oResuiltBarSeries.reserve( aBars.size());
+    
     TSimpleBar lOutBar;
     Reset( lOutBar );
     

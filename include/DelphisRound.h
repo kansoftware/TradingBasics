@@ -17,9 +17,10 @@
 #include "Comparers.h"
 
 
-const double gMaxInteger = static_cast< double >( std::numeric_limits<int>::max() );
-const double gMinInteger = static_cast< double >( std::numeric_limits<int>::min() );
-const double gMaxSizet = static_cast< double >( std::numeric_limits<size_t>::max() );
+static const double gMaxInteger = static_cast< double >( std::numeric_limits<int>::max() );
+static const double gMinInteger = static_cast< double >( std::numeric_limits<int>::min() );
+static const double gMaxSizet = static_cast< double >( std::numeric_limits<size_t>::max() );
+static const double gEpsilon = 1e-16;
 
 /**
  *  \fn ToDouble
