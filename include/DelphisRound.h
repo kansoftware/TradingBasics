@@ -3,7 +3,7 @@
  * \brief Модуль содержащий методы для округления с приведением типа, как в Дельфи
  * \author kan <kansoftware.ru>
  * \since 2015-08-25
- * \date 2019-09-23
+ * \date 2025-06-21
  */
 
 #ifndef DELPHISROUND_H
@@ -20,7 +20,7 @@
 static const double gMaxInteger = static_cast< double >( std::numeric_limits<int>::max() );
 static const double gMinInteger = static_cast< double >( std::numeric_limits<int>::min() );
 static const double gMaxSizet = static_cast< double >( std::numeric_limits<size_t>::max() );
-static const double gEpsilon = 1e-16;
+static const double gEpsilon = 1e-9;
 
 /**
  *  \fn ToDouble

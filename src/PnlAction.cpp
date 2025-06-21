@@ -609,7 +609,7 @@ TPriceSeries PnlsToDaily( const TPriceSeries & aPnls, const bool aCumSum ) {
     TPriceSeries lResult( ToSize_t( lMaxDate-lMinDate+1 ) );
     for( const auto &lDeal : aPnls ) {
         const size_t lDealDate = ToSize_t( Trunc( lDeal.DateTime / gOneDay ) - lMinDate );
-        const TPrice lDealPnl = lDeal.Price * ( fabs(lDeal.Volume) > gEpsilon ? 1.0 : lDeal.Volume );
+        const TPrice lDealPnl = lDeal.Price * ( not isPositiveValue(lDeal.Volume) ? 1.0 : lDeal.Volume );
         
         TSimpleTick lDayDeal = lResult[ lDealDate ];
         lDayDeal.DateTime = ToDouble( Trunc( lDeal.DateTime / gOneDay ) * gOneDay );
