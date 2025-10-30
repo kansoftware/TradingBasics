@@ -5,13 +5,13 @@
  *  \var gSymbols
  *  \brief Символы в строке для создания уникальных идентификаторов
  */
-const std::string gSymbols( "0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM" );
+const std::string gSymbols( "0123456789qwertyuiopasdfghjklzxcvbnm" ); /// QWERTYUIOPASDFGHJKLZXCVBNM (пришлось удалить после проблемы на binance)
 
 /**
  *  \var gSymbols_count
  *  \brief Число символов в строке для создания уникальных идентификаторов
  */
-const size_t gSymbols_count = gSymbols.size();//  62;
+const size_t gSymbols_count = gSymbols.size();// 36 было 62;
 
 //------------------------------------------------------------------------------------------
 std::string IntToCode( const long aValue ) {

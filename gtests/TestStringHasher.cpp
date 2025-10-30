@@ -6,7 +6,7 @@
 
 //------------------------------------------------------------------------------------------
 TEST( StringHasher, testCounter ) {
-    EXPECT_GE( GetSymbolsCount(), 60U );
+    EXPECT_GE( GetSymbolsCount(), 36U );
     
     size_t lIdx = 0;
     for( size_t i=0; i<100; ++i ){
