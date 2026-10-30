@@ -156,6 +156,14 @@ TPriceSeries BarsToPriceSeries( const TBarSeries & aBar, const TMAPoint aType );
  *  \param aBarPeriod Целевой период баров
  *  \return Серия агрегированных баров (слияние через operator+); DateTime
  *          результата — начало целевого периода (кратно длине периода от gStartingTime)
+ *  \note Конвенция нумерации бакетов: индекс бара — Trunc((DateTime -
+ *        gStartingTime) / длина периода), и бакет с индексом 0 (т.е. бары
+ *        из [gStartingTime, gStartingTime+длина периода)) ОТДЕЛЬНЫМ баром
+ *        не эмитится — он сливается со следующим бакетом. Результат
+ *        начинается с бара второго бакета, если вход начинается ровно с
+ *        gStartingTime. Данные, попадающие в бакет 0, теряют собственную
+ *        агрегацию — подавайте серию, начинающуюся после
+ *        gStartingTime+длины периода.
  */
 TBarSeries _CreateBars( const TBarSeries & aBars, const TBarPeriod aBarPeriod );
 
