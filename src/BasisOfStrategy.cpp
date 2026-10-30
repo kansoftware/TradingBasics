@@ -39,7 +39,6 @@ bool IsOneDay( const TInnerDate aLeft, const TInnerDate aRight) {
 //------------------------------------------------------------------------------------------
 bool IsOneHour( const TInnerDate aLeft, const TInnerDate aRight, const double aDuration ) {
     assert( isPositiveValue( aDuration ) );
-    //return IsLess( std::fabs( aLeft - aRight ), gOneHour*aDuration + 1.0 );
 
     return Trunc( aLeft / (gOneHour*aDuration) ) == Trunc( aRight / (gOneHour*aDuration) );
 }
@@ -124,7 +123,7 @@ void Reset( TSimpleBar &aBar ) {
 //------------------------------------------------------------------------------------------
 TBarSeries _CreateBars( const TBarSeries & aBars, const TBarPeriod aBarPeriod ) {
    
-    const double lOutBarPeriod = getBarPeriodLength( aBarPeriod );//0.0;
+    const double lOutBarPeriod = getBarPeriodLength( aBarPeriod );
     
     TBarSeries oResuiltBarSeries;
     oResuiltBarSeries.reserve( aBars.size());
@@ -195,10 +194,6 @@ std::string DateToStr( const TInnerDate aDate ) {
 
 //------------------------------------------------------------------------------------------
 TInnerTime ITime( const TInnerDate aDate ) {
-    // const time_t lTime = Round( aDate );
-    // struct tm * ltimeinfo = localtime (&lTime);
-    
-    // return ltimeinfo->tm_hour * 3600 + ltimeinfo->tm_min * 60 + ltimeinfo->tm_sec;
     return  ToDouble(ToInt(aDate) % ToInt(gOneDay));
 }
 
