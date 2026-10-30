@@ -106,7 +106,7 @@ TPriceSeries _ExponentMA(const TPriceSeries &aPrices, const int aPeriod,
   const size_t lResultSize = aPrices.size();
   TPriceSeries lResult(lResultSize);
 
-  if (lResultSize > lPeriod) {
+  if (lResultSize > lPeriod + aLag) {
 
     for (size_t i = 0; i < aLag; ++i) {
       lResult[i] = TSimpleTick{aPrices[i].DateTime, GetBadPrice(), 0.0};
@@ -399,7 +399,6 @@ TPriceSeries _ParabolicSar(const TBarSeries &aBars, const double aAf,
 
       const TSimpleTick lTick{lCurrentBar.DateTime, lSar, 1.0};
       lResult[i] = lTick;
-      //            continue;
     }
   }
 
@@ -447,6 +446,10 @@ TPriceSeries _ZigZag(const TBarSeries &aBars, const double aGap) {
   }
 
   TPriceSeries lResult(aBars.size());
+
+  if (aBars.empty()) {
+    return lResult;
+  }
 
   /////////////////////////////
   auto lSideToValue = [](const TDealSide aSide) -> TPrice {
@@ -954,6 +957,10 @@ TPriceSeries _AbsoluteZigZag(const TBarSeries &aBars, const double aGap) {
   }
 
   TPriceSeries lResult(aBars.size());
+
+  if (aBars.empty()) {
+    return lResult;
+  }
 
   /////////////////////////////
   auto lSideToValue = [](const TDealSide aSide) -> TPrice {
