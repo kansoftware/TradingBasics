@@ -1,9 +1,10 @@
-/*** 
+/***
  * \file LiveSAR.h
  * \brief SAR расчитываемый шаг за шагом
  * \author kan <kansoftware.ru>
  * \since 2020-08-26
- * \date 2020-08-26
+ * \date 2026-10-30
+ * \note Класс не потокобезопасен (non thread-safe)
  */
 
 #ifndef LIVESAR_H
@@ -15,16 +16,39 @@
 
 #include "BasisOfStrategy.h"
 
+/**
+ *  \class TLiveSAR
+ *  \brief Parabolic SAR (Wilder), рассчитываемый пошагово по мере прихода баров
+ *
+ *  Пошаговый аналог потоковой реализации _ParabolicSar (src/Indicators.cpp):
+ *  на одинаковой серии баров значения совпадают бар-в-бар. Ускорительный
+ *  фактор AF стартует с aAf и растёт на aAf при новом экстремуме тренда до
+ *  aMaxAf; при развороте тренда SAR перескакивает на противоположный
+ *  экстремум, AF сбрасывается в aAf.
+ *  \note Non thread-safe
+ */
 class TLiveSAR {
     public:
-        TLiveSAR(const double aAf=0.02, const double aMaxAf=0.2):
-            aAf(aAf),
-            aMaxAf(aMaxAf),
-            lInitaAfValue(aAf),
-            lAf(aAf){
+        /**
+         *  \brief Конструктор
+         *  \param aStartAf Начальный шаг AF и шаг его роста (по умолчанию 0.02)
+         *  \param aMaxAfLimit Максимальный AF (по умолчанию 0.2)
+         */
+        TLiveSAR(const double aStartAf=0.02, const double aMaxAfLimit=0.2):
+            aAf(aStartAf),
+            aMaxAf(aMaxAfLimit),
+            lInitaAfValue(aStartAf),
+            lAf(aStartAf){
             ;
         }
 
+        /**
+         *  \brief Добавляет бар и возвращает текущее значение SAR
+         *  \param aBar Новый бар
+         *  \return Значение SAR для этого бара
+         *  \note Первый Add — warm-up: SAR ещё не рассчитан, возвращается
+         *  Low первого бара (согласуется с _ParabolicSar: result[0] = bars[0].Low)
+         */
         TPrice Add( const TSimpleBar& aBar ) {
             
             if( std::isnan(lSar) ){
