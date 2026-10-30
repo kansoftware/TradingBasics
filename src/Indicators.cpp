@@ -68,19 +68,19 @@ TPriceSeries _SimpleMA(const TPriceSeries &aPrices, const int aPeriod,
   TPriceSeries lResult;
   lResult.reserve(lResultSize);
 
-  if (lResultSize > lPeriod) {
+  if (lResultSize > lPeriod + aLag) {
 
     for (size_t j = 0; j < aLag; ++j) {
       lResult.emplace_back(aPrices[j].DateTime, GetBadPrice(), 0.0);
     }
 
     TPrice lSum = 0.0;
-    for (size_t j = aLag; j < lPeriod - 1; ++j) {
+    for (size_t j = aLag; j < lPeriod - 1 + aLag; ++j) {
       lResult.emplace_back(aPrices[j].DateTime, GetBadPrice(), 0.0);
       lSum += aPrices[j].Price;
     }
 
-    for (size_t i = lPeriod - 1; i < lResultSize; ++i) {
+    for (size_t i = lPeriod - 1 + aLag; i < lResultSize; ++i) {
       lSum += aPrices[i].Price;
       lResult.emplace_back(aPrices[i].DateTime, lSum / ToDouble(lPeriod), 1.0);
       lSum -= aPrices[i - lPeriod + 1].Price;

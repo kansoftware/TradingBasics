@@ -87,9 +87,9 @@ TPriceSeries _ADX( const TBarSeries & aBars, const int aPeriod );
  *  \param aPeriod Период усреднения (> 0)
  *  \param aLag Число bad-точек в начале результата (сдвиг серии вправо)
  *  \return Серия SMA: первые aLag точек и ещё (aPeriod-1) точек после них —
- *          bad; значение в точке i — среднее точек окна [i-period+1, i].
- *          Бросает std::logic_error при aPeriod <= 0.
- *          Если длина входа <= aPeriod — все точки bad.
+ *          bad (всего aPeriod-1+aLag); значение в точке i — среднее точек
+ *          окна [i-period+1, i]. Бросает std::logic_error при aPeriod <= 0.
+ *          Если длина входа <= aPeriod + aLag — все точки bad.
  */
 TPriceSeries _SimpleMA( const TPriceSeries & aPrices, const int aPeriod, const size_t aLag = 0 );
 

@@ -121,6 +121,28 @@ TEST( Indicators, SimpleMA_AllBadWhenInputNotLongerThanPeriod ) {
     EXPECT_TRUE( _SimpleMA( TPriceSeries(), 3 ).empty() );
 }
 
+TEST( Indicators, SimpleMA_WithLagWindowEndsAtCurrentBar ) {
+    // Регрессия: при lag>0 окно выравнивается по конвенции _SmoothedMA —
+    // bad в [0, period-1+lag), далее SMA = среднее [i-period+1 .. i]
+    const std::vector< TPrice > lPrices{ 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0 };
+    const TPriceSeries lResult = _SimpleMA( SeriesOf( lPrices ), 3, 2 );
+
+    ASSERT_EQ( lResult.size(), lPrices.size() );
+    ExpectDateTimes( lResult, lPrices.size() );
+
+    // period-1+lag = 4 bad-точки
+    for( size_t i = 0; i < 4; ++i ) {
+        ExpectBadTick( lResult[i] );
+    }
+    ExpectGoodTick( lResult[4], ( 30.0 + 40.0 + 50.0 ) / 3.0 );  // окно [2..4]
+    ExpectGoodTick( lResult[5], ( 40.0 + 50.0 + 60.0 ) / 3.0 );  // окно [3..5]
+    ExpectGoodTick( lResult[6], ( 50.0 + 60.0 + 70.0 ) / 3.0 );  // окно [4..6]
+    ExpectGoodTick( lResult[7], ( 60.0 + 70.0 + 80.0 ) / 3.0 );  // окно [5..7]
+
+    // Граница guard'а: size == period+lag -> все bad (как у _SmoothedMA)
+    ExpectAllBad( _SimpleMA( SeriesOf( lPrices ), 4, 4 ), 8 );
+}
+
 //------------------------------------------------------------------------------------------
 // _ExponentMA
 //------------------------------------------------------------------------------------------
@@ -861,9 +883,10 @@ TEST( Basis, BarsToPriceSeries_AllTypes ) {
 
 TEST( Basis, CreateBars_Resampling1mTo5m ) {
     // 12 одноминутных баров: O=10+i, H=10.5+i, L=9.5+i, C=10.2+i, V=i+1.
-    // Вход начинается с gStartingTime+300 (бакет 1): бакет с индексом 0
-    // _CreateBars не эмитит (известная шершавость — сливается со следующим),
-    // поэтому данные не должны попадать в [gStartingTime, gStartingTime+period).
+    // Вход начинается с gStartingTime+300 (бакет 1): по конвенции
+    // _CreateBars бакет с индексом 0 отдельным баром не эмитит — сливается
+    // со следующим бакетом (см. Doxygen), поэтому данные не должны
+    // попадать в [gStartingTime, gStartingTime+period).
     TBarSeries lBars;
     for( size_t i = 0; i < 12; ++i ) {
         const TPrice lBase = static_cast< TPrice >( i );
