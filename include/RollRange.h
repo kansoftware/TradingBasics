@@ -189,11 +189,12 @@ class RollRange {
  *
  *  Значения внутри допуска от края окна считаются "шумом":
  *  - min: первое значение >= (min окна + aTollerance), если значений ниже
- *    (min окна + aTollerance) не меньше aMinTouch, иначе aBadValue; если все
- *    значения окна лежат в допуске от минимума, уровня за пределами полосы
- *    нет — min = aBadValue;
+ *    (min окна + aTollerance) не меньше aMinTouch, иначе aBadValue;
  *  - max: первое значение > (max окна - aTollerance), если значений выше
  *    не меньше aMinTouch, иначе aBadValue.
+ *  \note Если за пределами полосы допуска значений нет (например, все
+ *  значения окна лежат в допуске от минимума), соответствующая сторона
+ *  равна aBadValue — уровня за пределами полосы нет.
  *  \note Non thread-safe. Поле Range::quantile этим классом не заполняется.
  *  \note При aTollerance == 0 и aMinTouch >= 1 значений "ниже min + 0" нет,
  *  поэтому min и max всегда равны aBadValue — задавайте ненулевой допуск.
@@ -250,7 +251,9 @@ class RollRange_with_tollerance {
             range.min = ( it != windowSorted.end() && static_cast<size_t>(std::distance( windowSorted.begin(),it)) >= fMinTouch ) ? *it : fBadValue;
             
             auto itr = std::upper_bound(windowSorted.begin(), windowSorted.end(), *windowSorted.rbegin()-fTollerance );
-            range.max = ( static_cast<size_t>(std::distance(itr, windowSorted.end())) >= fMinTouch ) ? *itr : fBadValue;
+            // за пределами полосы допуска значений нет -> itr == end():
+            // max = fBadValue
+            range.max = ( itr != windowSorted.end() && static_cast<size_t>(std::distance(itr, windowSorted.end())) >= fMinTouch ) ? *itr : fBadValue;
         }
 
         /**
