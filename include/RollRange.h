@@ -189,7 +189,9 @@ class RollRange {
  *
  *  Значения внутри допуска от края окна считаются "шумом":
  *  - min: первое значение >= (min окна + aTollerance), если значений ниже
- *    (min окна + aTollerance) не меньше aMinTouch, иначе aBadValue;
+ *    (min окна + aTollerance) не меньше aMinTouch, иначе aBadValue; если все
+ *    значения окна лежат в допуске от минимума, уровня за пределами полосы
+ *    нет — min = aBadValue;
  *  - max: первое значение > (max окна - aTollerance), если значений выше
  *    не меньше aMinTouch, иначе aBadValue.
  *  \note Non thread-safe. Поле Range::quantile этим классом не заполняется.
@@ -215,6 +217,9 @@ class RollRange_with_tollerance {
          *  \param aTollerance Допуск "шума" от края окна (>= 0), по умолчанию 0.0
          *  \param aBadValue Значение при недостатке касаний
          *  \throw std::invalid_argument При aN == 0 или aTollerance < 0
+         *  \note Дефолт aTollerance == 0.0 при aMinTouch >= 1 даёт {aBadValue,
+         *  aBadValue} на каждом Add: касаний за границами полосы нет, пока не
+         *  задан ненулевой допуск — это штатная пост-фикс семантика
          */
         RollRange_with_tollerance( const size_t aN, const size_t aMinTouch=1, const double aTollerance = 0.0, const double aBadValue = -333333.33 ) :
             n( aN ),
@@ -240,7 +245,9 @@ class RollRange_with_tollerance {
             }
             
             auto it = std::lower_bound(windowSorted.begin(), windowSorted.end(), *windowSorted.begin()+fTollerance );
-            range.min = ( static_cast<size_t>(std::distance( windowSorted.begin(),it)) >= fMinTouch ) ? *it : fBadValue;
+            // все значения окна в допуске от минимума -> it == end(), уровня за
+            // пределами полосы нет: min = fBadValue
+            range.min = ( it != windowSorted.end() && static_cast<size_t>(std::distance( windowSorted.begin(),it)) >= fMinTouch ) ? *it : fBadValue;
             
             auto itr = std::upper_bound(windowSorted.begin(), windowSorted.end(), *windowSorted.rbegin()-fTollerance );
             range.max = ( static_cast<size_t>(std::distance(itr, windowSorted.end())) >= fMinTouch ) ? *itr : fBadValue;
