@@ -44,7 +44,7 @@ Include TradingBasics folders in your project. And build your project with the l
 
 Install package:
 ```bash
-sudo apt -f TradingBasics-0.0.1-Linux.deb
+sudo apt install ./TradingBasics-0.0.4-Linux.deb
 ```
 
 Add the following lines to cmake:
