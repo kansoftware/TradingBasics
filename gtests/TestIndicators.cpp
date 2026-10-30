@@ -629,3 +629,400 @@ TEST( Indicators, ChannelSize_EmptyOnShortInput ) {
     EXPECT_TRUE( _ChannelSize( TBarSeries{ Bar( 0, 1.0, 2.0, 0.5, 1.5 ) }, 2 ).empty() );
     EXPECT_TRUE( _ChannelSize( TBarSeries(), 2 ).empty() );
 }
+
+//------------------------------------------------------------------------------------------
+// _RollMinMax vs _RollMinMax_old
+//------------------------------------------------------------------------------------------
+
+namespace {
+
+/// 30 детерминированных «пилообразных» баров
+TBarSeries SawBars( const size_t aCount ) {
+    TBarSeries lBars;
+    for( size_t i = 0; i < aCount; ++i ) {
+        const TPrice lHigh = 20.0 + static_cast< TPrice >( i % 7 );
+        const TPrice lLow = 10.0 + static_cast< TPrice >( i % 5 );
+        const TPrice lClose = lLow + ( lHigh - lLow ) / 2.0;
+        lBars.push_back( Bar( i, lLow, lHigh, lLow, lClose ) );
+    }
+    return lBars;
+}
+
+} // namespace
+
+TEST( Indicators, RollMinMax_MatchesOldImplementation ) {
+    const TBarSeries lBars = SawBars( 30 );
+    const int lPeriod = 5;
+
+    for( int lTouch = 0; lTouch <= 1; ++lTouch ) {
+        const bool lTouchMode = ( lTouch != 0 );
+        TPriceSeries lMinNew;
+        TPriceSeries lMaxNew;
+        TPriceSeries lMinOld;
+        TPriceSeries lMaxOld;
+
+        ASSERT_TRUE( _RollMinMax( lBars, lPeriod, lMinNew, lMaxNew, lTouchMode ) );
+        ASSERT_TRUE( _RollMinMax_old( lBars, lPeriod, lMinOld, lMaxOld, lTouchMode ) );
+
+        ASSERT_EQ( lMinNew.size(), lBars.size() );
+        ASSERT_EQ( lMaxNew.size(), lBars.size() );
+        ASSERT_EQ( lMinOld.size(), lBars.size() );
+        ASSERT_EQ( lMaxOld.size(), lBars.size() );
+
+        for( size_t i = 0; i < static_cast< size_t >( lPeriod ); ++i ) {
+            ExpectBadTick( lMinNew[i] );
+            ExpectBadTick( lMaxNew[i] );
+        }
+        // min/max совпадают на общей серии (quantile у old не используется)
+        for( size_t i = static_cast< size_t >( lPeriod ); i < lBars.size(); ++i ) {
+            EXPECT_TRUE( IsEqual( lMinNew[i].Price, lMinOld[i].Price ) ) << "i = " << i;
+            EXPECT_TRUE( IsEqual( lMaxNew[i].Price, lMaxOld[i].Price ) ) << "i = " << i;
+            EXPECT_TRUE( IsEqual( lMinNew[i].DateTime, lMinOld[i].DateTime ) );
+        }
+    }
+}
+
+TEST( Indicators, RollMinMax_ReferenceValuesAndTouch ) {
+    // High: 10,12,12,12,11; Low: 8,9,9,9,10 — экстремумы повторяются для aTouch
+    const TBarSeries lBars{
+        Bar( 0, 9.0, 10.0, 8.0, 9.5 ),
+        Bar( 1, 10.0, 12.0, 9.0, 11.0 ),
+        Bar( 2, 10.5, 12.0, 9.0, 10.5 ),
+        Bar( 3, 11.0, 12.0, 9.0, 11.0 ),
+        Bar( 4, 11.0, 11.0, 10.0, 10.5 ) };
+
+    TPriceSeries lMin;
+    TPriceSeries lMax;
+    ASSERT_TRUE( _RollMinMax( lBars, 2, lMin, lMax ) );
+
+    ExpectGoodTick( lMin[2], 9.0 );   // окно [1..2]: min Low
+    ExpectGoodTick( lMax[2], 12.0 );  // окно [1..2]: max High
+    ExpectGoodTick( lMin[3], 9.0 );
+    ExpectGoodTick( lMax[3], 12.0 );
+    ExpectGoodTick( lMin[4], 9.0 );   // окно [3..4]: min{9,10}
+    ExpectGoodTick( lMax[4], 12.0 );  // окно [3..4]: max{12,11}
+    // Без aTouch Volume = 1 у всех посчитанных точек
+    EXPECT_TRUE( IsEqual( lMin[2].Volume, 1.0 ) );
+    EXPECT_TRUE( IsEqual( lMax[3].Volume, 1.0 ) );
+
+    // aTouch: аккумуляция касаний подряд идущих равных экстремумов; первая
+    // посчитанная точка обнуляется аккумулятором (цена предыдущей — bad)
+    TPriceSeries lMinTouch;
+    TPriceSeries lMaxTouch;
+    ASSERT_TRUE( _RollMinMax( lBars, 2, lMinTouch, lMaxTouch, true ) );
+    EXPECT_TRUE( IsEqual( lMaxTouch[2].Price, 12.0 ) );
+    EXPECT_TRUE( isZero( lMaxTouch[2].Volume ) );
+    EXPECT_TRUE( IsEqual( lMaxTouch[3].Price, 12.0 ) );
+    EXPECT_TRUE( IsEqual( lMaxTouch[3].Volume, 1.0 ) );  // High[3]=12, повтор
+    EXPECT_TRUE( IsEqual( lMinTouch[3].Volume, 1.0 ) );  // Low[3]=9, повтор
+    EXPECT_TRUE( isZero( lMaxTouch[4].Volume ) );        // High[4]=11 != max окна
+    EXPECT_TRUE( isZero( lMinTouch[4].Volume ) );        // Low[4]=10 != min окна
+}
+
+TEST( Indicators, RollMinMax_FailsOnBadPeriodOrShortInput ) {
+    TPriceSeries lMin;
+    TPriceSeries lMax;
+    EXPECT_FALSE( _RollMinMax( SawBars( 3 ), 5, lMin, lMax ) );
+    EXPECT_FALSE( _RollMinMax( SawBars( 5 ), 0, lMin, lMax ) );
+    EXPECT_FALSE( _RollMinMax_old( SawBars( 3 ), 5, lMin, lMax ) );
+    EXPECT_FALSE( _RollMinMax_old( SawBars( 5 ), -1, lMin, lMax ) );
+}
+
+//------------------------------------------------------------------------------------------
+// _SupportRessistance (smoke)
+//------------------------------------------------------------------------------------------
+
+TEST( Indicators, SupportRessistance_Smoke ) {
+    const TBarSeries lBars{
+        Bar( 0, 9.0, 10.0, 8.0, 9.5 ),
+        Bar( 1, 10.0, 12.0, 9.0, 11.0 ),
+        Bar( 2, 10.5, 11.0, 10.0, 10.5 ),
+        Bar( 3, 11.0, 13.0, 11.0, 12.0 ) };
+
+    TPriceSeries lMin;
+    TPriceSeries lMax;
+    ASSERT_TRUE( _SupportRessistance( lBars, 2, 1, 0.5, lMin, lMax ) );
+
+    ASSERT_EQ( lMin.size(), lBars.size() );
+    ASSERT_EQ( lMax.size(), lBars.size() );
+    ExpectBadTick( lMin[0] );
+    ExpectBadTick( lMax[0] );
+    ExpectBadTick( lMin[1] );
+    ExpectBadTick( lMax[1] );
+
+    // Посчитанные точки — уровни окна с допуском: внутри размаха серии,
+    // Volume = 1
+    for( size_t i = 2; i < lBars.size(); ++i ) {
+        EXPECT_FALSE( IsLess( lMin[i].Price, 8.0 ) );
+        EXPECT_FALSE( IsLess( 13.0, lMin[i].Price ) );
+        EXPECT_FALSE( IsLess( lMax[i].Price, 8.0 ) );
+        EXPECT_FALSE( IsLess( 13.0, lMax[i].Price ) );
+        EXPECT_TRUE( IsEqual( lMin[i].Volume, 1.0 ) );
+        EXPECT_TRUE( IsEqual( lMax[i].Volume, 1.0 ) );
+    }
+    // Тolerance 0.5: min = первое значение >= (min окна + 0.5),
+    // max = первое значение > (max окна - 0.5)
+    EXPECT_TRUE( IsEqual( lMin[2].Price, 10.0 ) );   // Lows {9,10}: 10 >= 9.5
+    EXPECT_TRUE( IsEqual( lMax[2].Price, 12.0 ) );   // Highs {12,11}: 12 > 11.5
+    EXPECT_TRUE( IsEqual( lMin[3].Price, 11.0 ) );   // Lows {10,11}: 11 >= 10.5
+    EXPECT_TRUE( IsEqual( lMax[3].Price, 13.0 ) );   // Highs {11,13}: 13 > 12.5
+}
+
+TEST( Indicators, SupportRessistance_FailsOnBadPeriodOrShortInput ) {
+    TPriceSeries lMin;
+    TPriceSeries lMax;
+    EXPECT_FALSE( _SupportRessistance( SawBars( 2 ), 5, 1, 0.5, lMin, lMax ) );
+    EXPECT_FALSE( _SupportRessistance( SawBars( 5 ), 0, 1, 0.5, lMin, lMax ) );
+}
+
+//------------------------------------------------------------------------------------------
+// _ForwardMinMax
+//------------------------------------------------------------------------------------------
+
+TEST( Indicators, ForwardMinMax_LookAheadWindow ) {
+    // H = 10+i, L = 5+i; TimeOf(i) = gStartingTime + 60*i
+    const size_t lCount = 6;
+    TBarSeries lBars;
+    for( size_t i = 0; i < lCount; ++i ) {
+        const TPrice lBase = static_cast< TPrice >( i );
+        lBars.push_back( Bar( i, lBase + 7.0, lBase + 10.0, lBase + 5.0, lBase + 8.0 ) );
+    }
+
+    // Окно 60 c: точка i видит только бар i+1
+    TPriceSeries lMin;
+    TPriceSeries lMax;
+    ASSERT_TRUE( _ForwardMinMax( lBars, 60, lMin, lMax ) );
+    ASSERT_EQ( lMin.size(), lCount );
+    ASSERT_EQ( lMax.size(), lCount );
+    for( size_t i = 0; i + 1 < lCount; ++i ) {
+        ExpectGoodTick( lMin[i], 5.0 + static_cast< TPrice >( i ) + 1.0 );
+        ExpectGoodTick( lMax[i], 10.0 + static_cast< TPrice >( i ) + 1.0 );
+    }
+    ExpectBadTick( lMin[lCount - 1] );
+    ExpectBadTick( lMax[lCount - 1] );
+
+    // Окно 120 c: точка i видит бары i+1 и i+2
+    TPriceSeries lMin2;
+    TPriceSeries lMax2;
+    ASSERT_TRUE( _ForwardMinMax( lBars, 120, lMin2, lMax2 ) );
+    ExpectGoodTick( lMin2[0], 6.0 );   // min(6, 7)
+    ExpectGoodTick( lMax2[0], 12.0 );  // max(11, 12)
+    ExpectGoodTick( lMin2[lCount - 2], 10.0 );  // только бар 5
+    ExpectGoodTick( lMax2[lCount - 2], 15.0 );
+}
+
+TEST( Indicators, ForwardMinMax_FailsOnShortInput ) {
+    TPriceSeries lMin;
+    TPriceSeries lMax;
+    EXPECT_FALSE( _ForwardMinMax( SawBars( 4 ), 60, lMin, lMax ) );
+    EXPECT_TRUE( _ForwardMinMax( SawBars( 5 ), 60, lMin, lMax ) );
+}
+
+//------------------------------------------------------------------------------------------
+// BasisOfStrategy: BarsToPriceSeries / _CreateBars / ITime
+//------------------------------------------------------------------------------------------
+
+namespace {
+
+/// Два бара с различными OHLCV: (10,12,9,11,V=5) и (11,13,10,12,V=6)
+TBarSeries TwoDistinctBars() {
+    TBarSeries lBars;
+    lBars.push_back( Bar( 0, 10.0, 12.0, 9.0, 11.0, 5.0 ) );
+    lBars.push_back( Bar( 1, 11.0, 13.0, 10.0, 12.0, 6.0 ) );
+    return lBars;
+}
+
+} // namespace
+
+TEST( Basis, BarsToPriceSeries_AllTypes ) {
+    const TBarSeries lBars = TwoDistinctBars();
+
+    const std::pair< TMAPoint, std::pair< TPrice, TPrice > > lExpected[] = {
+        { TMAPoint::MAP_Open, { 10.0, 11.0 } },
+        { TMAPoint::MAP_High, { 12.0, 13.0 } },
+        { TMAPoint::MAP_Low, { 9.0, 10.0 } },
+        { TMAPoint::MAP_Close, { 11.0, 12.0 } },
+        { TMAPoint::MAP_Mid, { 10.5, 11.5 } },
+        { TMAPoint::MAP_Triple, { 32.0 / 3.0, 35.0 / 3.0 } },
+        { TMAPoint::MAP_Volume, { 5.0, 6.0 } } };
+
+    for( const auto &lCase : lExpected ) {
+        const TPriceSeries lResult = BarsToPriceSeries( lBars, lCase.first );
+        ASSERT_EQ( lResult.size(), lBars.size() ) << "type = " << static_cast< int >( lCase.first );
+        EXPECT_TRUE( IsEqual( lResult[0].Price, lCase.second.first ) );
+        EXPECT_TRUE( IsEqual( lResult[1].Price, lCase.second.second ) );
+        // Volume точки = Volume бара, DateTime сохраняется
+        EXPECT_TRUE( IsEqual( lResult[0].Volume, 5.0 ) );
+        EXPECT_TRUE( IsEqual( lResult[1].Volume, 6.0 ) );
+        EXPECT_TRUE( IsEqual( lResult[0].DateTime, TimeOf( 0 ) ) );
+        EXPECT_TRUE( IsEqual( lResult[1].DateTime, TimeOf( 1 ) ) );
+    }
+}
+
+TEST( Basis, CreateBars_Resampling1mTo5m ) {
+    // 12 одноминутных баров: O=10+i, H=10.5+i, L=9.5+i, C=10.2+i, V=i+1.
+    // Вход начинается с gStartingTime+300 (бакет 1): бакет с индексом 0
+    // _CreateBars не эмитит (известная шершавость — сливается со следующим),
+    // поэтому данные не должны попадать в [gStartingTime, gStartingTime+period).
+    TBarSeries lBars;
+    for( size_t i = 0; i < 12; ++i ) {
+        const TPrice lBase = static_cast< TPrice >( i );
+        lBars.push_back( Bar( i + 5, 10.0 + lBase, 10.5 + lBase, 9.5 + lBase,
+                              10.2 + lBase, static_cast< double >( i ) + 1.0 ) );
+    }
+
+    const TBarSeries lResult = _CreateBars( lBars, TBarPeriod::Minute5 );
+    ASSERT_EQ( lResult.size(), 3u );
+
+    // Группа 0: бары 0..4; DateTime = начало 5-минутного периода
+    EXPECT_TRUE( IsEqual( lResult[0].DateTime, gStartingTime + 300.0 ) );
+    EXPECT_TRUE( IsEqual( lResult[0].Open, 10.0 ) );
+    EXPECT_TRUE( IsEqual( lResult[0].High, 14.5 ) );
+    EXPECT_TRUE( IsEqual( lResult[0].Low, 9.5 ) );
+    EXPECT_TRUE( IsEqual( lResult[0].Close, 14.2 ) );
+    EXPECT_TRUE( IsEqual( lResult[0].Volume, 15.0 ) );
+
+    // Группа 1: бары 5..9
+    EXPECT_TRUE( IsEqual( lResult[1].DateTime, gStartingTime + 600.0 ) );
+    EXPECT_TRUE( IsEqual( lResult[1].Open, 15.0 ) );
+    EXPECT_TRUE( IsEqual( lResult[1].High, 19.5 ) );
+    EXPECT_TRUE( IsEqual( lResult[1].Low, 14.5 ) );
+    EXPECT_TRUE( IsEqual( lResult[1].Close, 19.2 ) );
+    EXPECT_TRUE( IsEqual( lResult[1].Volume, 40.0 ) );
+
+    // Группа 2 (последняя, неполная): бары 10..11
+    EXPECT_TRUE( IsEqual( lResult[2].DateTime, gStartingTime + 900.0 ) );
+    EXPECT_TRUE( IsEqual( lResult[2].Open, 20.0 ) );
+    EXPECT_TRUE( IsEqual( lResult[2].High, 21.5 ) );
+    EXPECT_TRUE( IsEqual( lResult[2].Low, 19.5 ) );
+    EXPECT_TRUE( IsEqual( lResult[2].Close, 21.2 ) );
+    EXPECT_TRUE( IsEqual( lResult[2].Volume, 23.0 ) );
+}
+
+TEST( Basis, ITime_FromDouble ) {
+    // gStartingTime = 975888000 кратно 86400 -> время суток 0
+    EXPECT_TRUE( IsEqual( ITime( gStartingTime ), 0.0 ) );
+    EXPECT_TRUE( IsEqual( ITime( gStartingTime + 3661.0 ), 3661.0 ) );
+    EXPECT_TRUE( IsEqual( ITime( gStartingTime + 2.0 * 86400.0 + 60.0 ), 60.0 ) );
+}
+
+TEST( Basis, ITime_FromString ) {
+    EXPECT_TRUE( IsEqual( ITime( std::string( "01:02:03" ) ), 3723.0 ) );
+    EXPECT_TRUE( IsEqual( ITime( std::string( "10:30" ) ), 37800.0 ) );
+    EXPECT_TRUE( IsEqual( ITime( std::string( "00:00:00" ) ), 0.0 ) );
+    // Строка без ':' (невалидная) -> 0.0
+    EXPECT_TRUE( IsEqual( ITime( std::string( "100500" ) ), 0.0 ) );
+    // Мусор на месте числа -> std::invalid_argument из std::stoi
+    EXPECT_ANY_THROW( ITime( std::string( "ab:cd" ) ) );
+    EXPECT_ANY_THROW( ITime( std::string( "12:30:xy" ) ) );
+}
+
+//------------------------------------------------------------------------------------------
+// BasisOfStrategy: IsValidBar / operator+ / округления / DateToStr
+//------------------------------------------------------------------------------------------
+
+TEST( Basis, IsValidBar_VolumeAndPrices ) {
+    EXPECT_TRUE( IsValidBar( Bar( 0, 10.0, 12.0, 9.0, 11.0 ) ) );
+    // Volume = 0 допустим, отрицательный — нет
+    EXPECT_TRUE( IsValidBar( Bar( 0, 10.0, 12.0, 9.0, 11.0, 0.0 ) ) );
+    EXPECT_FALSE( IsValidBar( TSimpleBar{ TimeOf( 0 ), 10.0, 12.0, 9.0, 11.0, -1.0 } ) );
+    EXPECT_FALSE( IsValidBar( TSimpleBar{ TimeOf( 0 ), 10.0, 12.0, 9.0, 11.0, -0.5 } ) );
+    // Пустой бар и невалидные цены
+    EXPECT_FALSE( IsValidBar( gEmptyBar ) );
+    EXPECT_FALSE( IsValidBar( TSimpleBar{ TimeOf( 0 ), 0.0, 12.0, 9.0, 11.0, 1.0 } ) );
+    EXPECT_FALSE( IsValidBar( TSimpleBar{ TimeOf( 0 ), gMaxPrice, gMaxPrice, 9.0, 11.0, 1.0 } ) );
+}
+
+TEST( Basis, BarMergeOperatorPlus ) {
+    const TSimpleBar lFirst = Bar( 0, 10.0, 12.0, 9.0, 11.0, 5.0 );
+    const TSimpleBar lSecond = Bar( 1, 11.0, 13.0, 8.5, 12.0, 6.0 );
+
+    const TSimpleBar lMerged = lFirst + lSecond;
+    EXPECT_TRUE( IsEqual( lMerged.DateTime, lFirst.DateTime ) );  // DateTime первого
+    EXPECT_TRUE( IsEqual( lMerged.Open, 10.0 ) );                 // Open первого
+    EXPECT_TRUE( IsEqual( lMerged.High, 13.0 ) );                 // экстремумы
+    EXPECT_TRUE( IsEqual( lMerged.Low, 8.5 ) );
+    EXPECT_TRUE( IsEqual( lMerged.Close, 12.0 ) );                // Close второго
+    EXPECT_TRUE( IsEqual( lMerged.Volume, 11.0 ) );               // сумма Volume
+
+    // Невалидный операнд заменяется другим
+    const TSimpleBar lFromEnd = gEmptyBar + lSecond;
+    EXPECT_TRUE( IsValidBar( lFromEnd ) );
+    EXPECT_TRUE( IsEqual( lFromEnd.Open, 11.0 ) );
+    const TSimpleBar lFromStart = lFirst + gEmptyBar;
+    EXPECT_TRUE( IsValidBar( lFromStart ) );
+    EXPECT_TRUE( IsEqual( lFromStart.Open, 10.0 ) );
+    EXPECT_FALSE( IsValidBar( gEmptyBar + gEmptyBar ) );
+}
+
+TEST( Basis, RoundToTruncToCeilTo_Grid ) {
+    const TPrice lStep = 0.25;
+    // Округление к ближайшему
+    EXPECT_TRUE( IsEqual( RoundTo( 10.3, lStep ), 10.25 ) );
+    EXPECT_TRUE( IsEqual( RoundTo( 10.4, lStep ), 10.5 ) );
+    EXPECT_TRUE( IsEqual( RoundTo( 10.25, lStep ), 10.25 ) );
+    EXPECT_TRUE( IsEqual( RoundTo( -10.4, lStep ), -10.5 ) );
+    // Вниз
+    EXPECT_TRUE( IsEqual( TruncTo( 10.99, lStep ), 10.75 ) );
+    EXPECT_TRUE( IsEqual( TruncTo( 10.5, lStep ), 10.5 ) );
+    EXPECT_TRUE( IsEqual( TruncTo( -10.4, lStep ), -10.25 ) );
+    // Вверх
+    EXPECT_TRUE( IsEqual( CeilTo( 10.1, lStep ), 10.25 ) );
+    EXPECT_TRUE( IsEqual( CeilTo( 10.0, lStep ), 10.0 ) );
+    EXPECT_TRUE( IsEqual( CeilTo( -10.4, lStep ), -10.25 ) );
+}
+
+TEST( Basis, DateToStr_NonEmpty ) {
+    const std::string lStr = DateToStr( 0.0 );
+    EXPECT_FALSE( lStr.empty() );
+    // ctime-формат, год стабилен вне зависимости от часового пояса
+    EXPECT_NE( lStr.find( "1970" ), std::string::npos );
+    const std::string lStr2 = DateToStr( gStartingTime );
+    EXPECT_FALSE( lStr2.empty() );
+    EXPECT_NE( lStr2.find( "2000" ), std::string::npos );
+}
+
+//------------------------------------------------------------------------------------------
+// BarPeriod
+//------------------------------------------------------------------------------------------
+
+TEST( BarPeriod, LengthsForAllValues ) {
+    EXPECT_TRUE( IsEqual( getBarPeriodLength( TBarPeriod::Minute ), 60.0 ) );
+    EXPECT_TRUE( IsEqual( getBarPeriodLength( TBarPeriod::Minute5 ), 300.0 ) );
+    EXPECT_TRUE( IsEqual( getBarPeriodLength( TBarPeriod::Minute10 ), 600.0 ) );
+    EXPECT_TRUE( IsEqual( getBarPeriodLength( TBarPeriod::Minute15 ), 900.0 ) );
+    EXPECT_TRUE( IsEqual( getBarPeriodLength( TBarPeriod::Hour ), 3600.0 ) );
+    EXPECT_TRUE( IsEqual( getBarPeriodLength( TBarPeriod::Hour4 ), 14400.0 ) );
+    EXPECT_TRUE( IsEqual( getBarPeriodLength( TBarPeriod::Day ), 86400.0 ) );
+    EXPECT_TRUE( IsEqual( getBarPeriodLength( TBarPeriod::Week ), 604800.0 ) );
+    EXPECT_TRUE( IsEqual( getBarPeriodLength( TBarPeriod::Second ), 1.0 ) );
+}
+
+TEST( BarPeriod, NamesForAllValues ) {
+    EXPECT_EQ( getBarPeriodName( TBarPeriod::Minute ), "1MIN" );
+    EXPECT_EQ( getBarPeriodName( TBarPeriod::Minute5 ), "5MIN" );
+    EXPECT_EQ( getBarPeriodName( TBarPeriod::Minute10 ), "10MIN" );
+    EXPECT_EQ( getBarPeriodName( TBarPeriod::Minute15 ), "15MIN" );
+    EXPECT_EQ( getBarPeriodName( TBarPeriod::Hour ), "1HOUR" );
+    EXPECT_EQ( getBarPeriodName( TBarPeriod::Hour4 ), "4HOURS" );
+    EXPECT_EQ( getBarPeriodName( TBarPeriod::Day ), "1DAY" );
+    EXPECT_EQ( getBarPeriodName( TBarPeriod::Week ), "1WEEK" );
+    EXPECT_EQ( getBarPeriodName( TBarPeriod::Second ), "1SEC" );
+}
+
+TEST( BarPeriod, EnumBounds ) {
+    // minValue/maxValue — служебные границы; таблица длин покрывает все слоты
+    EXPECT_EQ( static_cast< int >( TBarPeriod::minValue ), 0 );
+    EXPECT_EQ( static_cast< int >( TBarPeriod::maxValue ), 10 );
+    EXPECT_EQ( sizeof( gOutBarPeriod ) / sizeof( gOutBarPeriod[0] ),
+               static_cast< size_t >( TBarPeriod::maxValue ) );
+}
+
+#ifndef NDEBUG
+TEST( BarPeriod, BoundsAssertDiesInDebug ) {
+    // Выход за границы — assert в debug-сборке
+    EXPECT_DEATH( getBarPeriodLength( TBarPeriod::minValue ), "" );
+    EXPECT_DEATH( getBarPeriodLength( TBarPeriod::maxValue ), "" );
+    EXPECT_DEATH( getBarPeriodName( TBarPeriod::maxValue ), "" );
+}
+#endif
