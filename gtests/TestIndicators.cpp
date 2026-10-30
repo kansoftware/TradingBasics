@@ -8,6 +8,7 @@
 
 #include <gtest/gtest.h>
 
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -266,4 +267,365 @@ TEST( Indicators, KAMA_ThrowsOnNonPositivePeriod ) {
 TEST( Indicators, KAMA_AllBadWhenInputNotLongerThanPeriod ) {
     const std::vector< TPrice > lPrices{ 1.0, 2.0, 3.0 };
     ExpectAllBad( _KAMA( SeriesOf( lPrices ), 3 ), 3 );
+}
+
+//------------------------------------------------------------------------------------------
+// Бары для индикаторов от TBarSeries
+//------------------------------------------------------------------------------------------
+
+namespace {
+
+TSimpleBar Bar( const size_t aIndex, const TPrice aOpen, const TPrice aHigh,
+                const TPrice aLow, const TPrice aClose, const double aVolume = 1.0 ) {
+    const TSimpleBar lBar{ TimeOf( aIndex ), aOpen, aHigh, aLow, aClose, aVolume };
+    EXPECT_TRUE( IsValidBar( lBar ) );
+    return lBar;
+}
+
+} // namespace
+
+//------------------------------------------------------------------------------------------
+// _TrueRange / _AverageTrueRange
+//------------------------------------------------------------------------------------------
+
+TEST( Indicators, TrueRange_Reference ) {
+    const TBarSeries lBars{
+        Bar( 0, 10.0, 12.0, 9.0, 11.0, 5.0 ),
+        Bar( 1, 11.0, 13.0, 10.0, 12.0, 6.0 ),
+        Bar( 2, 12.0, 12.5, 8.0, 8.5, 7.0 ),
+        Bar( 3, 8.5, 15.0, 8.0, 14.0, 8.0 ),
+        Bar( 4, 14.0, 14.5, 13.5, 14.0, 9.0 ) };
+
+    const TPriceSeries lResult = _TrueRange( lBars );
+
+    ASSERT_EQ( lResult.size(), lBars.size() );
+    // Первая точка = High-Low первого бара; далее с учётом гэпа к prevClose
+    ExpectGoodTick( lResult[0], 3.0, 5.0 );           // 12-9
+    ExpectGoodTick( lResult[1], 3.0, 6.0 );           // max(13,11)-min(10,11)
+    ExpectGoodTick( lResult[2], 4.5, 7.0 );           // max(12.5,12)-min(8,12)
+    ExpectGoodTick( lResult[3], 7.0, 8.0 );           // max(15,8.5)-min(8,8.5)
+    ExpectGoodTick( lResult[4], 1.0, 9.0 );           // max(14.5,14)-min(13.5,14)
+}
+
+TEST( Indicators, TrueRange_EmptyInputGivesEmptySeries ) {
+    EXPECT_TRUE( _TrueRange( TBarSeries() ).empty() );
+}
+
+TEST( Indicators, AverageTrueRange_IsSmoothedTrueRangeWithLag ) {
+    // period=2, lag=1: TR = [3, 3, 4.5, 7, 1] ->
+    // seed = (TR[1]+TR[2])/2 = 3.75, далее v[i] = (TR[i]+v[i-1])/2
+    const TBarSeries lBars{
+        Bar( 0, 10.0, 12.0, 9.0, 11.0 ),
+        Bar( 1, 11.0, 13.0, 10.0, 12.0 ),
+        Bar( 2, 12.0, 12.5, 8.0, 8.5 ),
+        Bar( 3, 8.5, 15.0, 8.0, 14.0 ),
+        Bar( 4, 14.0, 14.5, 13.5, 14.0 ) };
+
+    const TPriceSeries lResult = _AverageTrueRange( lBars, 2 );
+
+    ASSERT_EQ( lResult.size(), lBars.size() );
+    ExpectBadTick( lResult[0] );
+    ExpectBadTick( lResult[1] );
+    ExpectGoodTick( lResult[2], 3.75 );
+    ExpectGoodTick( lResult[3], ( 7.0 + 3.75 ) / 2.0 );   // 5.375
+    ExpectGoodTick( lResult[4], ( 1.0 + 5.375 ) / 2.0 );  // 3.1875
+}
+
+TEST( Indicators, AverageTrueRange_EmptyInputGivesEmptySeries ) {
+    EXPECT_TRUE( _AverageTrueRange( TBarSeries(), 3 ).empty() );
+}
+
+//------------------------------------------------------------------------------------------
+// _DI / _ADX (smoke)
+//------------------------------------------------------------------------------------------
+
+namespace {
+
+/// 9 монотонно растущих баров: High/Low/Close шагают вверх на 1
+TBarSeries RisingBars( const size_t aCount ) {
+    TBarSeries lBars;
+    for( size_t i = 0; i < aCount; ++i ) {
+        const TPrice lBase = 10.0 + static_cast< TPrice >( i );
+        lBars.push_back( Bar( i, lBase, lBase + 1.0, lBase - 1.0, lBase ) );
+    }
+    return lBars;
+}
+
+} // namespace
+
+TEST( Indicators, DI_RisingTrendPositiveDIDominates ) {
+    const TBarSeries lBars = RisingBars( 6 );
+    TPriceSeries lDIp;
+    TPriceSeries lDIn;
+
+    ASSERT_TRUE( _DI( lBars, 3, lDIp, lDIn ) );
+    ASSERT_EQ( lDIp.size(), lBars.size() );
+    ASSERT_EQ( lDIn.size(), lBars.size() );
+
+    // Первые period точек bad
+    for( size_t i = 0; i < 3; ++i ) {
+        ExpectBadTick( lDIp[i] );
+        ExpectBadTick( lDIn[i] );
+    }
+    // Рост без откатов: +DM = 1 на каждом шаге, -DM = 0; сглаживание
+    // sum = sum*(p-1)/p + DM, DI = 100*sumDM/sumTR
+    EXPECT_NEAR( lDIp[3].Price, 100.0 * ( 7.0 / 3.0 ) / 6.0, 1e-6 );    // 38.888...
+    EXPECT_TRUE( IsEqual( lDIn[3].Price, 0.0 ) );
+    EXPECT_NEAR( lDIp[5].Price, 100.0 * ( 73.0 / 27.0 ) / 6.0, 1e-6 );  // 45.061...
+    EXPECT_TRUE( IsEqual( lDIn[5].Price, 0.0 ) );
+    EXPECT_TRUE( IsGreat( lDIp[5].Price, lDIn[5].Price ) );
+}
+
+TEST( Indicators, DI_FailsOnShortInputOrBadPeriod ) {
+    TPriceSeries lDIp;
+    TPriceSeries lDIn;
+    EXPECT_FALSE( _DI( RisingBars( 2 ), 3, lDIp, lDIn ) );
+    EXPECT_FALSE( _DI( RisingBars( 6 ), 1, lDIp, lDIn ) );
+}
+
+TEST( Indicators, ADX_RisingTrendSmoke ) {
+    const TBarSeries lBars = RisingBars( 9 );
+    const TPriceSeries lResult = _ADX( lBars, 3 );
+
+    ASSERT_EQ( lResult.size(), lBars.size() );
+    // Первые 2*period-1 точек bad
+    for( size_t i = 0; i < 5; ++i ) {
+        ExpectBadTick( lResult[i] );
+    }
+    // Чистый тренд: DX = 100 на каждом шаге -> ADX = 100
+    for( size_t i = 5; i < lResult.size(); ++i ) {
+        EXPECT_NEAR( lResult[i].Price, 100.0, 1e-6 );
+        EXPECT_TRUE( IsEqual( lResult[i].Volume, 1.0 ) );
+    }
+}
+
+TEST( Indicators, ADX_EmptyOnShortInputOrBadPeriod ) {
+    EXPECT_TRUE( _ADX( RisingBars( 2 ), 3 ).empty() );
+    EXPECT_TRUE( _ADX( RisingBars( 9 ), 1 ).empty() );
+}
+
+//------------------------------------------------------------------------------------------
+// _ZigZag / _AbsoluteZigZag
+//------------------------------------------------------------------------------------------
+
+TEST( Indicators, ZigZag_EmptyInputGivesEmptySeries ) {
+    // Регрессия №2: раньше читался aBars[0] (UB на пустом входе)
+    EXPECT_TRUE( _ZigZag( TBarSeries(), 0.1 ).empty() );
+}
+
+TEST( Indicators, ZigZag_ThrowsOnNonPositiveGap ) {
+    EXPECT_THROW( _ZigZag( TBarSeries(), 0.0 ), std::logic_error );
+    EXPECT_THROW( _ZigZag( TBarSeries(), -0.1 ), std::logic_error );
+}
+
+TEST( Indicators, ZigZag_TurnDetectionOnSyntheticBars ) {
+    // gap=0.1: разворот вниз при Low < head*0.9, вверх при High >= head*1.1;
+    // Volume = +-1 маркер ветки, промежуточные точки Price = 0
+    const TBarSeries lBars{
+        Bar( 0, 100.0, 100.0, 90.0, 95.0 ),
+        Bar( 1, 100.0, 105.0, 95.0, 100.0 ),
+        Bar( 2, 100.0, 104.0, 96.0, 100.0 ),
+        Bar( 3, 100.0, 103.0, 92.0, 95.0 ),
+        Bar( 4, 95.0, 95.0, 93.0, 94.0 ),
+        Bar( 5, 100.0, 104.0, 100.0, 102.0 ),
+        Bar( 6, 105.0, 110.0, 102.0, 108.0 ) };
+
+    const TPriceSeries lResult = _ZigZag( lBars, 0.1 );
+    ASSERT_EQ( lResult.size(), lBars.size() );
+    ExpectDateTimes( lResult, lBars.size() );
+
+    // Старт: голова = High[0] = 100, ветка Buy
+    EXPECT_TRUE( IsEqual( lResult[0].Price, 0.0 ) );  // голова переехала на бар 1
+    EXPECT_TRUE( IsEqual( lResult[0].Volume, 1.0 ) );
+    ExpectGoodTick( lResult[1], 105.0, 1.0 );         // новая голова вверх
+    EXPECT_TRUE( IsEqual( lResult[2].Price, 0.0 ) );
+    EXPECT_TRUE( IsEqual( lResult[2].Volume, 1.0 ) );
+    ExpectGoodTick( lResult[3], 92.0, -1.0 );         // разворот вниз (92 < 105*0.9)
+    EXPECT_TRUE( IsEqual( lResult[4].Price, 0.0 ) );
+    EXPECT_TRUE( IsEqual( lResult[4].Volume, -1.0 ) );
+    EXPECT_TRUE( IsEqual( lResult[5].Price, 0.0 ) );  // разворот вверх (104), голова потом переехала на бар 6
+    EXPECT_TRUE( IsEqual( lResult[5].Volume, 1.0 ) );
+    ExpectGoodTick( lResult[6], 110.0, 1.0 );         // голова вверх (110 > 104)
+}
+
+TEST( Indicators, AbsoluteZigZag_EmptyInputGivesEmptySeries ) {
+    EXPECT_TRUE( _AbsoluteZigZag( TBarSeries(), 10.0 ).empty() );
+}
+
+TEST( Indicators, AbsoluteZigZag_ThrowsOnNonPositiveGap ) {
+    EXPECT_THROW( _AbsoluteZigZag( TBarSeries(), 0.0 ), std::logic_error );
+    EXPECT_THROW( _AbsoluteZigZag( TBarSeries(), -10.0 ), std::logic_error );
+}
+
+TEST( Indicators, AbsoluteZigZag_TurnDetectionOnSyntheticBars ) {
+    // gap=10 (абсолютный): разворот вниз при Low < head-10, вверх при High >= head+10
+    const TBarSeries lBars{
+        Bar( 0, 100.0, 100.0, 95.0, 97.0 ),
+        Bar( 1, 100.0, 110.0, 105.0, 108.0 ),
+        Bar( 2, 108.0, 108.0, 101.0, 104.0 ),
+        Bar( 3, 105.0, 105.0, 98.0, 100.0 ),
+        Bar( 4, 100.0, 100.0, 96.0, 98.0 ),
+        Bar( 5, 105.0, 109.0, 105.0, 107.0 ) };
+
+    const TPriceSeries lResult = _AbsoluteZigZag( lBars, 10.0 );
+    ASSERT_EQ( lResult.size(), lBars.size() );
+
+    EXPECT_TRUE( IsEqual( lResult[0].Price, 0.0 ) );
+    EXPECT_TRUE( IsEqual( lResult[0].Volume, 1.0 ) );
+    ExpectGoodTick( lResult[1], 110.0, 1.0 );   // голова вверх
+    EXPECT_TRUE( IsEqual( lResult[2].Price, 0.0 ) );
+    EXPECT_TRUE( IsEqual( lResult[3].Price, 0.0 ) );  // голова вниз переехала на бар 4
+    EXPECT_TRUE( IsEqual( lResult[3].Volume, -1.0 ) );
+    ExpectGoodTick( lResult[4], 96.0, -1.0 );   // разворот вниз (96 < 110-10)
+    ExpectGoodTick( lResult[5], 109.0, 1.0 );   // разворот вверх (109 >= 96+10)
+}
+
+//------------------------------------------------------------------------------------------
+// _MACD
+//------------------------------------------------------------------------------------------
+
+TEST( Indicators, MACD_LineIsEmaDifferenceSignalIsEmaOfLine ) {
+    // fast=2, slow=3, smooth=2; максимальный период 3 -> линия bad до точки 2,
+    // сигнал = _ExponentMA(линия, 2, lag=2)
+    const std::vector< TPrice > lPrices{ 10.0, 12.0, 11.0, 15.0, 14.0, 18.0 };
+    const TPriceSeries lResult = _MACD( SeriesOf( lPrices ), 2, 3, 2 );
+
+    ASSERT_EQ( lResult.size(), lPrices.size() );
+
+    // Линия до точки max(fast,slow)-1 = 2 — bad, сигнал там тоже bad
+    for( size_t i = 0; i < 3; ++i ) {
+        ExpectBadTick( lResult[i] );
+    }
+    // line[2] = EMA2[2]-EMA3[2] = 11-11 = 0; seed сигнала = (0 + 2/3)/2 = 1/3
+    // line[3] = 41/3 - 13 = 2/3; line[4] = 125/9 - 27/2 = 7/18
+    // signal[4] = (7/18)*(2/3) + (1/3)*(1/3) = 10/27
+    // line[5] = 449/27 - 63/4 = 95/108
+    // signal[5] = (95/108)*(2/3) + (10/27)*(1/3) = 115/162
+    ExpectGoodTick( lResult[3], 1.0 / 3.0 );
+    EXPECT_NEAR( lResult[4].Price, 10.0 / 27.0, 1e-9 );
+    EXPECT_NEAR( lResult[5].Price, 115.0 / 162.0, 1e-9 );
+    EXPECT_TRUE( IsEqual( lResult[4].Volume, 1.0 ) );
+    EXPECT_TRUE( IsEqual( lResult[5].Volume, 1.0 ) );
+}
+
+TEST( Indicators, MACD_ThrowsOnNonPositivePeriods ) {
+    const TPriceSeries lSeries = SeriesOf( { 1.0, 2.0, 3.0, 4.0, 5.0 } );
+    EXPECT_THROW( _MACD( lSeries, 0, 3, 2 ), std::logic_error );
+    EXPECT_THROW( _MACD( lSeries, 2, -3, 2 ), std::logic_error );
+    EXPECT_THROW( _MACD( lSeries, 2, 3, 0 ), std::logic_error );
+}
+
+//------------------------------------------------------------------------------------------
+// _BollingerBands
+//------------------------------------------------------------------------------------------
+
+TEST( Indicators, BollingerBands_ReferenceOnFivePointWindow ) {
+    // period=5, sigma=2: популяционная сигма окна {1..5} и {2..6} = sqrt(2)
+    const std::vector< TPrice > lPrices{ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+    TPriceSeries lMin;
+    TPriceSeries lMean;
+    TPriceSeries lMax;
+
+    ASSERT_TRUE( _BollingerBands( SeriesOf( lPrices ), 5, 2.0, lMin, lMean, lMax ) );
+    ASSERT_EQ( lMin.size(), lPrices.size() );
+    ASSERT_EQ( lMean.size(), lPrices.size() );
+    ASSERT_EQ( lMax.size(), lPrices.size() );
+
+    for( size_t i = 0; i < 4; ++i ) {
+        ExpectBadTick( lMin[i] );
+        ExpectBadTick( lMean[i] );
+        ExpectBadTick( lMax[i] );
+    }
+
+    const double lSigma = std::sqrt( 2.0 );
+    ExpectGoodTick( lMean[4], 3.0 );
+    ExpectGoodTick( lMin[4], 3.0 - 2.0 * lSigma );
+    ExpectGoodTick( lMax[4], 3.0 + 2.0 * lSigma );
+    ExpectGoodTick( lMean[5], 4.0 );
+    ExpectGoodTick( lMin[5], 4.0 - 2.0 * lSigma );
+    ExpectGoodTick( lMax[5], 4.0 + 2.0 * lSigma );
+}
+
+TEST( Indicators, BollingerBands_FailsWhenInputNotLongerThanPeriod ) {
+    TPriceSeries lMin;
+    TPriceSeries lMean;
+    TPriceSeries lMax;
+    const TPriceSeries lSeries = SeriesOf( { 1.0, 2.0, 3.0 } );
+    EXPECT_FALSE( _BollingerBands( lSeries, 3, 2.0, lMin, lMean, lMax ) );
+    EXPECT_FALSE( _BollingerBands( lSeries, 5, 2.0, lMin, lMean, lMax ) );
+}
+
+//------------------------------------------------------------------------------------------
+// _Stochastic
+//------------------------------------------------------------------------------------------
+
+TEST( Indicators, Stochastic_ReferenceAndZeroRange ) {
+    const TBarSeries lBars{
+        Bar( 0, 9.0, 10.0, 8.0, 9.0 ),
+        Bar( 1, 10.0, 12.0, 9.0, 11.0 ),
+        Bar( 2, 10.5, 11.0, 10.0, 10.5 ),
+        Bar( 3, 11.0, 13.0, 11.0, 12.0 ) };
+
+    const TPriceSeries lResult = _Stochastic( lBars, 3 );
+    ASSERT_EQ( lResult.size(), lBars.size() );
+
+    for( size_t i = 0; i < 3; ++i ) {
+        ExpectBadTick( lResult[i] );
+    }
+    // Окно [1..3]: maxH=13, minL=9 -> %K = 100*(12-9)/4 = 75
+    ExpectGoodTick( lResult[3], 75.0 );
+}
+
+TEST( Indicators, Stochastic_ZeroRangeGivesFifty ) {
+    const TBarSeries lBars{
+        Bar( 0, 10.0, 10.0, 10.0, 10.0 ),
+        Bar( 1, 10.0, 10.0, 10.0, 10.0 ),
+        Bar( 2, 10.0, 10.0, 10.0, 10.0 ),
+        Bar( 3, 10.0, 10.0, 10.0, 10.0 ) };
+
+    const TPriceSeries lResult = _Stochastic( lBars, 2 );
+    ASSERT_EQ( lResult.size(), lBars.size() );
+    ExpectBadTick( lResult[0] );
+    ExpectBadTick( lResult[1] );
+    ExpectGoodTick( lResult[2], 50.0 );
+    ExpectGoodTick( lResult[3], 50.0 );
+}
+
+TEST( Indicators, Stochastic_ShortInputGivesZeroTicks ) {
+    const TBarSeries lBars{
+        Bar( 0, 10.0, 10.0, 10.0, 10.0 ),
+        Bar( 1, 10.0, 10.0, 10.0, 10.0 ) };
+
+    const TPriceSeries lResult = _Stochastic( lBars, 3 );
+    ASSERT_EQ( lResult.size(), lBars.size() );
+    for( size_t i = 0; i < lResult.size(); ++i ) {
+        EXPECT_TRUE( IsEqual( lResult[i].Price, 0.0 ) );
+        EXPECT_TRUE( IsEqual( lResult[i].Volume, 0.0 ) );
+    }
+}
+
+//------------------------------------------------------------------------------------------
+// _ChannelSize
+//------------------------------------------------------------------------------------------
+
+TEST( Indicators, ChannelSize_Reference ) {
+    const TBarSeries lBars{
+        Bar( 0, 9.0, 10.0, 8.0, 9.0 ),
+        Bar( 1, 10.0, 12.0, 9.0, 11.0 ),
+        Bar( 2, 10.5, 11.0, 10.0, 10.5 ),
+        Bar( 3, 11.5, 13.0, 11.0, 12.0 ) };
+
+    const TPriceSeries lResult = _ChannelSize( lBars, 2 );
+    ASSERT_EQ( lResult.size(), lBars.size() );
+    ExpectBadTick( lResult[0] );
+    ExpectBadTick( lResult[1] );
+    // Окно [1..2]: maxH=12, minL=9
+    ExpectGoodTick( lResult[2], 3.0 );
+    // Окно [2..3]: maxH=13, minL=10
+    ExpectGoodTick( lResult[3], 3.0 );
+}
+
+TEST( Indicators, ChannelSize_EmptyOnShortInput ) {
+    EXPECT_TRUE( _ChannelSize( TBarSeries{ Bar( 0, 1.0, 2.0, 0.5, 1.5 ) }, 2 ).empty() );
+    EXPECT_TRUE( _ChannelSize( TBarSeries(), 2 ).empty() );
 }
