@@ -123,9 +123,13 @@ class TRollRangeBar {
                 ln++;
             }
             const double lc = static_cast<double>(ln);
-            lsd /= (lc-1.5);
-            
-            fErr = sqrt(lsd) / sqrt(lc);
+            if( lc < 2.0 ){
+                fErr = NAN;
+            } else {
+                lsd /= (lc-1.5);
+
+                fErr = sqrt(lsd) / sqrt(lc);
+            }
             fCached_e = true;
             return fErr;
         }

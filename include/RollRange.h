@@ -46,7 +46,7 @@ class RollRange {
         RollRange( const size_t aN, const double aP = 1.0, const double aBadValue = -333333.33 ) :
             n( aN ),
             backSearch(aP >= 0.5),
-            pN( (backSearch ? Trunc((aP - 1.0) * ToDouble(n) ) : Trunc(aP * ToDouble(n) ) ) ),
+            pN( (backSearch ? std::min(Trunc((aP - 1.0) * ToDouble(n) ), -1) : Trunc(aP * ToDouble(n) ) ) ),
             fBadValue( aBadValue ),
             fArrayReserve( std::max(aN, 1000UL) ) {
             if (n < 1) throw std::invalid_argument("n must be greater than 0");
@@ -138,7 +138,7 @@ class RollRange_with_tollerance {
 
     public:
 
-        RollRange_with_tollerance( const size_t aN, const size_t aMinTouch=1, const double aTollerance = -1.0, const double aBadValue = -333333.33 ) :
+        RollRange_with_tollerance( const size_t aN, const size_t aMinTouch=1, const double aTollerance = 0.0, const double aBadValue = -333333.33 ) :
             n( aN ),
             fMinTouch(aMinTouch),
             fTollerance( aTollerance ),
@@ -233,7 +233,7 @@ class RollRangeLazy {
         RollRangeLazy( const size_t aN, const double aP = 1.0, const double aBadValue = -333333.33 ) :
             n( aN ),
             backSearch(aP >= 0.5),
-            pN( (backSearch ? Trunc((aP - 1.0) * ToDouble(n) ) : Trunc(aP * ToDouble(n) ) ) ),
+            pN( (backSearch ? std::min(Trunc((aP - 1.0) * ToDouble(n) ), -1) : Trunc(aP * ToDouble(n) ) ) ),
             fBadValue( aBadValue ),
             fArrayReserve( std::max(aN, 1000UL) ) {
             if (n < 1) throw std::invalid_argument("n must be greater than 0");

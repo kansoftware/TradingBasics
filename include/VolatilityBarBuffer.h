@@ -51,13 +51,17 @@ class TVolatilityBarBuffer {
                 if(lisfill){
                     const double lc = static_cast<double>(fCount);
                     const double lMean = fMean / lc;
-                    double lsd = 0.0;
-                    for (auto& lv : fBuffer) {
-                        lsd += pow( lMean - lv, 2 );
+                    if( lc < 2.0 ){
+                        fErr = NAN;
+                    } else {
+                        double lsd = 0.0;
+                        for (auto& lv : fBuffer) {
+                            lsd += pow( lMean - lv, 2 );
+                        }
+
+                        lsd /= (lc-1.5);
+                        fErr = sqrt(lsd) / sqrt(lc);
                     }
-                    
-                    lsd /= (lc-1.5);
-                    fErr = sqrt(lsd) / sqrt(lc);
                 }
 
                 return lisfill;
@@ -92,8 +96,8 @@ class TVolatilityBarRollBuffer {
             fMean = 0;
             fErr = NAN;
         }
-        double getMax()const{return *fMMBuffer.rbegin();}
-        double getMin()const{return *fMMBuffer.begin();}
+        double getMax()const{return fMMBuffer.empty() ? NAN : *fMMBuffer.rbegin();}
+        double getMin()const{return fMMBuffer.empty() ? NAN : *fMMBuffer.begin();}
         double getMean()const{return fMean/static_cast<double>(fCount);}
         double getErr()const{return fErr;}
 
@@ -109,26 +113,30 @@ class TVolatilityBarRollBuffer {
                 fMMBuffer.erase( fMMBuffer.find( lOldValue ) );
 
             }else{
-                fBuffer.push_back(lValue);
-                if(not fBuffer.empty()){
-                    fMean += lValue;
-                }else{
+                if( fBuffer.empty() ){
                     fMean = lValue;
+                }else{
+                    fMean += lValue;
                 }
+                fBuffer.push_back(lValue);
                 lisfill = isFill();
             }
             fMMBuffer.emplace(lValue);
-            
+
             if(lisfill){
                 const double lc = static_cast<double>(fCount);
                 const double lMean = fMean / lc;
-                double lsd = 0.0;
-                for (auto& lv : fBuffer) {
-                    lsd += pow( lMean - lv, 2 );
+                if( lc < 2.0 ){
+                    fErr = NAN;
+                } else {
+                    double lsd = 0.0;
+                    for (auto& lv : fBuffer) {
+                        lsd += pow( lMean - lv, 2 );
+                    }
+
+                    lsd /= (lc-1.5);
+                    fErr = sqrt(lsd) / sqrt(lc);
                 }
-                
-                lsd /= (lc-1.5);
-                fErr = sqrt(lsd) / sqrt(lc);
             }
 
             return lisfill;

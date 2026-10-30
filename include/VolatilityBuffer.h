@@ -48,13 +48,17 @@ template <class T, class Tin=T> class TVolatilityBuffer {
                 if(lisfill){
                     const T lc = static_cast<T>(fCount);
                     const T lMean = fMean / lc;
-                    double lsd = 0.0;
-                    for (auto& lv : fBuffer) {
-                        lsd += pow( lMean - lv, 2.0 );
+                    if( lc < 2.0 ){
+                        fErr = NAN;
+                    } else {
+                        double lsd = 0.0;
+                        for (auto& lv : fBuffer) {
+                            lsd += pow( lMean - lv, 2.0 );
+                        }
+
+                        lsd /= (lc-1.5);
+                        fErr = sqrt(lsd) / sqrt(lc);
                     }
-                    
-                    lsd /= (lc-1.5);
-                    fErr = sqrt(lsd) / sqrt(lc);
                 }
 
                 return lisfill;

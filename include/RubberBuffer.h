@@ -50,6 +50,11 @@ template <class T, class Tin=T> class TRubberBuffer {
             if(isFill()){
                 const T lc = static_cast<T>(fBuffer.size());
                 const T lMean = fMean / lc;
+                if( lc < 2.0 ){
+                    fSD = NAN;
+                    fErr = NAN;
+                    return true;
+                }
                 double lsd = 0.0;
                 for (auto& lv : fBuffer) {
                     lsd += pow( lMean - lv, 2 );
@@ -57,7 +62,7 @@ template <class T, class Tin=T> class TRubberBuffer {
                 fSD = sqrt( lsd / (lc-1) ); // ГОСТ Р 8.736-2011
                 lsd /= (lc-1.5);
                 fErr = sqrt(lsd) / sqrt(lc);
-                
+
                 return true;
             }
 
