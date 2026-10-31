@@ -3,7 +3,7 @@
  * \brief Модуль с шаблонами для работы с указателями
  * \author kan <kansoftware.ru>
  * \since 2014-04-22
- * \date 2020-12-16
+ * \date 2026-10-31
  * Об атомарности исполнения функций должен заботиться программист
  */
 
@@ -13,43 +13,40 @@
 #include <memory>
 
 /**
- *  \fn CheckPtrValidate
- *  \brief Проверка валидности указателя
+ *  \fn isValidPointer
+ *  \brief Проверка валидности указателя: true, если указатель не нулевой.
+ *
+ *  Единственная реализация для всех режимов сборки (ранняя debug-ветка с
+ *  dynamic_cast к тому же типу не имела наблюдаемых эффектов: одноимённый
+ *  dynamic_cast по указателю никогда не бросает и всегда успешен для
+ *  ненулевого указателя). Работает и для неклассных типов T.
  */
-
-    #ifdef NDEBUG
-    template<typename T> constexpr bool isValidPointer( const T* aPointer ) {
-        return aPointer != nullptr;
-
-    #else
-    template<typename T> bool isValidPointer( const T* aPointer ) {
-        if ( aPointer == nullptr ) { return false; }
-
-        bool result = false;
-        try {
-            if( nullptr != dynamic_cast< const T* >( aPointer ) ) { result = true; }
-        } catch (...) {
-        }
-
-        return result;
-    #endif
+template<typename T> constexpr bool isValidPointer( const T* aPointer ) {
+    return aPointer != nullptr;
 }
 
+/**
+ *  \brief Перегрузка для const void* (в том числе для литерала nullptr,
+ *  который не выводит T в шаблонной перегрузке).
+ */
 constexpr bool isValidPointer( const void* aPointer ) {
     return aPointer != nullptr;
 }
 
+/**
+ *  \brief Перегрузка для std::shared_ptr: true, если указатель владеет
+ *  объектом (эквивалентно static_cast<bool>( aPointer )).
+ */
 template<typename T> constexpr bool isValidPointer( const std::shared_ptr< T > & aPointer ) {
-    #ifdef NDEBUG
-        return aPointer.operator bool();
-    #else
-        return aPointer and isValidPointer( aPointer.get() );
-    #endif
+    return aPointer.operator bool();
 }
 
 /**
  *  \fn FreeAndNil
- *  \brief Зачистка памяти
+ *  \brief Зачистка памяти: удаляет объект и обнуляет указатель.
+ *
+ *  Для нулевого указателя удаление не выполняется (только обнуление);
+ *  после вызова aPointer гарантированно равен nullptr.
  */
 template<typename T> void FreeAndNil( T* &aPointer ) {
     if( aPointer != nullptr ) {
