@@ -40,7 +40,7 @@ struct Range {
  */
 class RollRange {
     private:
-        Range range;
+        Range range{};
         const size_t n;
         const bool backSearch;
         const int pN;
@@ -195,13 +195,14 @@ class RollRange {
  *  \note Если за пределами полосы допуска значений нет (например, все
  *  значения окна лежат в допуске от минимума), соответствующая сторона
  *  равна aBadValue — уровня за пределами полосы нет.
- *  \note Non thread-safe. Поле Range::quantile этим классом не заполняется.
+ *  \note Non thread-safe. Поле Range::quantile этим классом не заполняется
+ *  (остаётся нулевым — range{}).
  *  \note При aTollerance == 0 и aMinTouch >= 1 значений "ниже min + 0" нет,
  *  поэтому min и max всегда равны aBadValue — задавайте ненулевой допуск.
  */
 class RollRange_with_tollerance {
     private:
-        Range range;
+        Range range{};
         const size_t n;
         const size_t fMinTouch;
         const double fTollerance;
@@ -214,7 +215,7 @@ class RollRange_with_tollerance {
         /**
          *  \brief Конструктор
          *  \param aN Размер окна (>= 1)
-         *  \param aMinTouch Минимальное число значений за границей допуска (>= 1)
+         *  \param aMinTouch Минимальное число значений за границей допуска (>= 0; при 0 вырожденный случай max-стороны = fBadValue)
          *  \param aTollerance Допуск "шума" от края окна (>= 0), по умолчанию 0.0
          *  \param aBadValue Значение при недостатке касаний
          *  \throw std::invalid_argument При aN == 0 или aTollerance < 0
