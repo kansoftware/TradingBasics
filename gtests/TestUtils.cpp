@@ -3,7 +3,7 @@
  * \brief gtest утилит: PointerValidater, Comparers, DelphisRound, Prices, StringHasher, FileManipulator
  *
  * Базовые случаи Comparers/Prices/Round покрыты в TestBasic.cpp, StringHasher —
- * в TestStringHasher.cpp; здесь — границы, отсутсвующие там.
+ * в TestStringHasher.cpp; здесь — границы, отсутствующие там.
  */
 #include <gtest/gtest.h>
 
@@ -208,6 +208,16 @@ TEST( TestUtils, CeilTruncToSize_tNegativeIsZero ) {
     EXPECT_EQ( TruncToSize_t( 2.7 ), 2U );
     EXPECT_EQ( TruncToSize_t( 0.9 ), 0U );
     EXPECT_EQ( TruncToSize_t( -2.7 ), 0U );
+}
+
+//------------------------------------------------------------------------------------------
+TEST( TestUtils, CeilTruncIntVariants ) {
+    // int-варианты: Ceil идёт через std::ceil, Trunc — через std::floor
+    // (в отличие от ToInt/static_cast, усекающих к нулю)
+    EXPECT_EQ( Ceil( -5.4 ), -5 );
+    EXPECT_EQ( Ceil( 5.4 ), 6 );
+    EXPECT_EQ( Trunc( -5.4 ), -6 );
+    EXPECT_EQ( Trunc( 5.4 ), 5 );
 }
 
 //------------------------------------------------------------------------------------------
