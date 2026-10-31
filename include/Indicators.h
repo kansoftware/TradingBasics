@@ -11,9 +11,10 @@
  *    входная серия; DateTime точек результата копируется из входа.
  *  - Точки прогрева (warm-up) помечаются bad-ценой GetBadPrice() и Volume=0;
  *    посчитанные точки несут Volume=1, если иное не оговорено в доке функции.
- *  - Параметр aLag (там, где есть) — дополнительный сдвиг серии вправо:
- *    первые aLag точек результата всегда bad, seed/окно MA строятся
- *    на отрезке [aLag, period+aLag) входной серии.
+ *  - Параметр aLag (_SimpleMA/_ExponentMA/_SmoothedMA) — дополнительный сдвиг
+ *    серии вправо: первые aLag точек результата всегда bad, seed/окно MA
+ *    строятся на отрезке [aLag, period+aLag) входной серии.
+ *    Исключение — _KAMA: там aLag серию не сдвигает (см. доку _KAMA).
  */
 
 #ifndef BACKTESTER_INDICATORS_H
@@ -127,11 +128,18 @@ TPriceSeries _SmoothedMA( const TPriceSeries & aPrices, const int aPeriod, const
  *  \param aCoeff Показатель степени сглаживания (обычно 2)
  *  \param aFastPeriod Период быстрой константы (обычно 2)
  *  \param aSlowPeriod Период медленной константы (обычно 30)
- *  \param aLag Число bad-точек в начале результата
- *  \return Первые max(aLag, aPeriod) точек — bad; далее
+ *  \param aLag Сдвига серии НЕ даёт: число bad-точек от aLag не зависит
+ *          (плохие — первые aPeriod точек, см. \return).
+ *  \return При длине входа <= aPeriod — все точки bad. Иначе bad — ровно
+ *          первые aPeriod точек (независимо от aLag), далее
  *          v[i] = c*price[i] + (1-c)*v[i-1], где c — коэффициент,
  *          зависящий от Efficiency Ratio окна [i-aPeriod, i].
  *          На плоской серии совпадает с ценой.
+ *          aLag влияет только на накопление начальной волатильности:
+ *          при aLag > 1 члены |price[j]-price[j-1]| для j из [1, aLag-1]
+ *          в неё не попадают, поэтому ER первых рассчитанных точек
+ *          считается по неполному окну (корректно начиная с
+ *          i >= aPeriod + aLag - 1).
  *          Бросает std::logic_error при aPeriod <= 0, aFastPeriod <= 0
  *          или aSlowPeriod <= 0.
  */
