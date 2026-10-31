@@ -38,8 +38,10 @@ class CIndicatorES : public PowellsMethod {
         CIndicatorES(): PowellsMethod(), Par( 5.0 ) { }
         bool CalcPar( const TDoubles &dat, const TForecastModelParams &aParams );
         double GetPar( const int n );
-        
-    private:
+
+    protected:
+        /// \brief Целевая функция оптимизации (SSE-модель Хольта со штрафом за
+        ///        выход Alpha/Gamma/Phi за диапазоны) — protected для тестируемости
         double func( const TDoubles &p ) override;
 };
 

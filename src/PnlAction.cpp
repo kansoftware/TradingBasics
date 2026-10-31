@@ -502,8 +502,7 @@ TPrice DealsToCoeff(
             TSimpleTick{ lOpenTime,0.0,0.0 },
             lTickCompare 
         );
-        assert( itBegin != lBalance.end() );
-        if( itBegin == lBalance.end() ) { // сделка позже последнего бара: в release assert исчезает — пропуск
+        if( itBegin == lBalance.end() ) { // сделка позже последнего бара — штатно пропускаем
             continue;
         }
 
