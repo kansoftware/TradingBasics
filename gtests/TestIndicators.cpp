@@ -390,7 +390,8 @@ TEST( Indicators, DI_RisingTrendPositiveDIDominates ) {
         ExpectBadTick( lDIn[i] );
     }
     // Рост без откатов: +DM = 1 на каждом шаге, -DM = 0; сглаживание
-    // sum = sum*(p-1)/p + DM, DI = 100*sumDM/sumTR
+    // sum = sum*(p-1)/p + DM, DI = 100*sumDM/sumTR. Сидирование: DM[0] = 0,
+    // DI стартует с суммы DM первых period точек (TR аналогично)
     EXPECT_NEAR( lDIp[3].Price, 100.0 * ( 7.0 / 3.0 ) / 6.0, 1e-6 );    // 38.888...
     EXPECT_TRUE( IsEqual( lDIn[3].Price, 0.0 ) );
     EXPECT_NEAR( lDIp[5].Price, 100.0 * ( 73.0 / 27.0 ) / 6.0, 1e-6 );  // 45.061...

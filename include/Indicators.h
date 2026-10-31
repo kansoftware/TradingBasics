@@ -236,9 +236,10 @@ bool _Forecasting( const TPriceSeries & aPrices, const size_t aForecastPeriod, c
  *  \param aoMax Выход: максимум окна по High
  *  \param aTouch Режим подсчёта касаний (см. Volume)
  *  \return true при успехе; false при aPeriod <= 0 или коротком входе.
- *          Первые aPeriod точек — bad. Volume: без aTouch — 1; при aTouch — 1,
- *          если текущий бар сам достиг экстремума окна, иначе 0, причём
- *          подряд идущие равные экстремумы аккумулируют число касаний в Volume.
+ *          Первые aPeriod точек — bad. Volume: без aTouch — 1; при aTouch
+ *          одиночное касание экстремума даёт Volume = 0, накопление — только
+ *          для цепочек подряд идущих равных экстремумов: точка цепочки несёт
+ *          число предыдущих подряд идущих равных экстремумов (0, 1, 2, ...).
  */
 bool _RollMinMax( const TBarSeries & aBars, const int aPeriod,
             TPriceSeries & aoMin,
