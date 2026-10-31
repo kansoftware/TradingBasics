@@ -17,14 +17,43 @@
 #include "Comparers.h"
 
 
+/**
+ *  \var gMaxInteger
+ *  \brief Верхняя граница int в double — порог assert'ов Int-функций в debug-сборке.
+ */
 static const double gMaxInteger = static_cast< double >( std::numeric_limits<int>::max() );
+/**
+ *  \var gMinInteger
+ *  \brief Нижняя граница int в double — порог assert'ов Int-функций в debug-сборке.
+ */
 static const double gMinInteger = static_cast< double >( std::numeric_limits<int>::min() );
+/**
+ *  \var gMaxSizet
+ *  \brief Верхняя граница size_t в double — порог assert'ов size_t-функций.
+ */
 static const double gMaxSizet = static_cast< double >( std::numeric_limits<size_t>::max() );
+/**
+ *  \var gEpsilon
+ *  \brief Машинная погрешность сравнений модуля (на данный момент вне функций не используется).
+ */
 static const double gEpsilon = 1e-9;
 
 /**
+ *  \brief ВАЖНО о NDEBUG-макросах.
+ *
+ *  Часть функций модуля собрана парами: в release (NDEBUG) — это МАКРОСЫ
+ *  (простое static_cast, без проверок), в debug — ШАБЛОНЫ с тем же телом плюс
+ *  assert'ы на диапазон. Наблюдаемая семантика для значений в допустимом
+ *  диапазоне одинакова в обоих режимах; при выходе за диапазон debug-сборка
+ *  падает по assert, release даёт неопределённое поведение усечения.
+ *  Тесты не должны проверять assert-поведение — только общие семантики.
+ */
+
+/**
  *  \fn ToDouble
- *  \brief приведение к double
+ *  \brief Приведение к double.
+ *  \param aValue Приводимое значение.
+ *  \return Значение, приведённое к double (static_cast).
  */
 #ifdef NDEBUG
     #define ToDouble( aValue ) static_cast< double >( (aValue) )
@@ -36,17 +65,22 @@ static const double gEpsilon = 1e-9;
 
 /**
  *  \fn ToSize_t
- *  \brief приведение size_t , отрицательные значения заменяются на 0
+ *  \brief Приведение к size_t; отрицательные (и эпсилон-нулевые) значения заменяются на 0.
+ *  \param aValue Приводимое значение.
+ *  \return static_cast<size_t>(aValue) для aValue > gAbsoluteZero, иначе 0.
  */
 template< typename T > constexpr size_t ToSize_t( const T aValue ) {
     assert( ToDouble( aValue ) < gMaxSizet  );
-    
+
     return isPositiveValue( ToDouble(aValue) ) ? static_cast< size_t >( aValue ) : 0UL ;
 }
 
 /**
  *  \fn ToInt
- *  \brief приведение к Int, если значение вне диапазона Int будет except
+ *  \brief Приведение к int усечением к нулю (static_cast); вне диапазона int —
+ *  в debug assert, в release UB (см. ВАЖНО о NDEBUG-макросах).
+ *  \param aValue Приводимое значение.
+ *  \return Целая часть aValue, усечённая к нулю: ToInt(5.7)==5, ToInt(-5.7)==-5.
  */
 #ifdef NDEBUG
     #define ToInt( aValue ) static_cast< int >( (aValue) )
@@ -61,12 +95,17 @@ template< typename T > constexpr size_t ToSize_t( const T aValue ) {
 
 /**
  *  \fn Round
- *  \brief Округление как в Delphi из double в int
+ *  \brief Округление к ближайшему целому из double в int.
+ *
+ *  std::round округляет половины ОТ НУЛЯ (2.5 -> 3, -2.5 -> -3) — в отличие от
+ *  банковского округления Delphi. Вне диапазона int — в debug assert, в release UB.
+ *  \param aValue Округляемое значение.
+ *  \return Ближайшее целое как int.
  *  \todo всё с округлением вынести в отдельный модуль
  */
 #ifdef NDEBUG
     #define Round( aValue ) static_cast< int >( std::round( aValue ) )
-#else    
+#else
     template< typename T > int Round( const T aValue ) {
         assert( gMinInteger <= ToDouble( aValue ) );
         assert( ToDouble( aValue ) <= gMaxInteger );
@@ -77,17 +116,22 @@ template< typename T > constexpr size_t ToSize_t( const T aValue ) {
 
 /**
  *  \fn RoundToSize_t
- *  \brief Округление double в size_t , отрицательные значения заменяются на 0
+ *  \brief Округление к ближайшему целому в size_t; отрицательные значения заменяются на 0.
+ *  \param aValue Округляемое значение.
+ *  \return std::round(aValue) для aValue > gAbsoluteZero, иначе 0 (RoundToSize_t(-0.5)==0).
  */
 template< typename T > constexpr size_t RoundToSize_t( const T aValue ) {
     assert( ToDouble( aValue ) < gMaxSizet );
-    
+
     return isPositiveValue( aValue ) ? static_cast< size_t >( std::round( aValue ) ) : 0UL ;
 }
 
 /**
  *  \fn Ceil
- *  \brief Округление вверх как в Delphi из double в int
+ *  \brief Округление вверх из double в int.
+ *  Вне диапазона int — в debug assert, в release UB (см. ВАЖНО о NDEBUG-макросах).
+ *  \param aValue Округляемое значение.
+ *  \return Наименьшее целое >= aValue (Ceil(-5.4)==-5).
  */
 #ifdef NDEBUG
     #define Ceil( aValue ) static_cast< int >( std::ceil( aValue ) )
@@ -102,17 +146,22 @@ template< typename T > constexpr size_t RoundToSize_t( const T aValue ) {
 
 /**
  *  \fn CeilToSize_t
- *  \brief Округление вверх из double в size_t , отрицательные значения заменяются на 0
+ *  \brief Округление вверх в size_t; отрицательные значения заменяются на 0.
+ *  \param aValue Округляемое значение.
+ *  \return std::ceil(aValue) для aValue > gAbsoluteZero, иначе 0.
  */
 template< typename T > constexpr size_t CeilToSize_t( const T aValue ) {
     assert( ToDouble( aValue ) <  gMaxSizet );
-    
+
     return isPositiveValue( aValue ) ? static_cast< size_t >( std::ceil( aValue ) ) : 0UL ;
 }
 
 /**
  *  \fn Trunc
- *  \brief Округление вниз как в Delphi из double в int
+ *  \brief Округление вниз (усечение) из double в int.
+ *  Вне диапазона int — в debug assert, в release UB (см. ВАЖНО о NDEBUG-макросах).
+ *  \param aValue Округляемое значение.
+ *  \return Наибольшее целое <= aValue (Trunc(-5.4)==-6).
  */
 #ifdef NDEBUG
     #define Trunc( aValue ) static_cast< int >( std::floor( aValue ) )
@@ -123,11 +172,13 @@ template< typename T > constexpr size_t CeilToSize_t( const T aValue ) {
 
         return static_cast< int >( std::floor( aValue ) );
     }
-#endif    
+#endif
 
 /**
  *  \fn TruncToSize_t
- *  \brief Округление вниз из double в size_t
+ *  \brief Округление вниз (усечение) в size_t; отрицательные значения заменяются на 0.
+ *  \param aValue Округляемое значение.
+ *  \return std::floor(aValue) для aValue > gAbsoluteZero, иначе 0.
  */
 template< typename T > constexpr size_t TruncToSize_t( const T aValue ) {
     assert( ToDouble( aValue ) < gMaxSizet );
