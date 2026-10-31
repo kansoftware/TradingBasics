@@ -996,10 +996,11 @@ TEST( Basis, RoundToTruncToCeilTo_Grid ) {
 }
 
 TEST( Basis, DateToStr_NonEmpty ) {
+    // ctime() рендерит локальное время: epoch 0 в TZ с отрицательным смещением
+    // даёт 1969 — проверяем только непустоту. Год проверяем на gStartingTime
+    // (дек 2000, год стабилен в любом часовом поясе).
     const std::string lStr = DateToStr( 0.0 );
     EXPECT_FALSE( lStr.empty() );
-    // ctime-формат, год стабилен вне зависимости от часового пояса
-    EXPECT_NE( lStr.find( "1970" ), std::string::npos );
     const std::string lStr2 = DateToStr( gStartingTime );
     EXPECT_FALSE( lStr2.empty() );
     EXPECT_NE( lStr2.find( "2000" ), std::string::npos );
