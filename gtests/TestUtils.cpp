@@ -12,6 +12,7 @@
 
 #include "PointerValidater.h"
 #include "Comparers.h"
+#include "DelphisRound.h"
 
 //------------------------------------------------------------------------------------------
 namespace {
@@ -104,6 +105,108 @@ TEST( TestUtils, FreeAndNilDeletesAndNulls ) {
     TCounted * lSecond = new TCounted;
     FreeAndNil( lSecond );
     EXPECT_EQ( TCounted::sDtorCount, 2 );
+}
+
+//------------------------------------------------------------------------------------------
+// Comparers: границы gAbsoluteZero = 1e-9 (строгие неравенства — открытый интервал)
+//------------------------------------------------------------------------------------------
+TEST( TestUtils, ComparersAbsoluteZeroBounds ) {
+    // isZero — открытый интервал (-eps, eps): сами границы не считаются нулём
+    EXPECT_TRUE( isZero( 0.0 ) );
+    EXPECT_TRUE( isZero( 1e-10 ) );
+    EXPECT_TRUE( isZero( -1e-10 ) );
+    EXPECT_FALSE( isZero( gAbsoluteZero ) );
+    EXPECT_FALSE( isZero( -gAbsoluteZero ) );
+    EXPECT_FALSE( isZero( 2e-9 ) );
+    EXPECT_FALSE( isZero( -2e-9 ) );
+
+    // IsEqual/IsNotEqual через ту же эпсилон-зону
+    EXPECT_TRUE( IsEqual( 1e-10, 0.0 ) );
+    EXPECT_FALSE( IsEqual( 1e-9, 0.0 ) );
+    EXPECT_FALSE( IsEqual( -2e-9, 0.0 ) );
+    EXPECT_FALSE( IsNotEqual( 1e-10, 0.0 ) );
+    EXPECT_TRUE( IsNotEqual( 2e-9, 0.0 ) );
+}
+
+//------------------------------------------------------------------------------------------
+TEST( TestUtils, ComparersGreatLessBounds ) {
+    // IsGreat: A - B > eps (строго); разность ровно eps — ещё не "больше"
+    EXPECT_FALSE( IsGreat( 1e-9, 0.0 ) );
+    EXPECT_TRUE( IsGreat( 2e-9, 0.0 ) );
+    EXPECT_FALSE( IsGreat( 1e-10, 0.0 ) );
+    EXPECT_TRUE( IsGreat( 0.0, -2e-9 ) );
+
+    // IsLess: B - A > eps (строго), симметрично
+    EXPECT_FALSE( IsLess( 0.0, 1e-9 ) );
+    EXPECT_TRUE( IsLess( 0.0, 2e-9 ) );
+    EXPECT_FALSE( IsLess( 0.0, 1e-10 ) );
+}
+
+//------------------------------------------------------------------------------------------
+TEST( TestUtils, ComparersIsPositiveAndSign ) {
+    // isPositiveValue: строго больше eps (не ">= 0")
+    EXPECT_FALSE( isPositiveValue( 1e-9 ) );
+    EXPECT_TRUE( isPositiveValue( 2e-9 ) );
+    EXPECT_FALSE( isPositiveValue( 1e-10 ) );
+    EXPECT_FALSE( isPositiveValue( -1e-10 ) );
+
+    // Sign: 1 / -1 / 0 с той же эпсилон-зоной
+    EXPECT_EQ( Sign( 2e-9 ), 1 );
+    EXPECT_EQ( Sign( -2e-9 ), -1 );
+    EXPECT_EQ( Sign( 1e-10 ), 0 );
+    EXPECT_EQ( Sign( -1e-10 ), 0 );
+    EXPECT_EQ( Sign( 0.0 ), 0 );
+    EXPECT_EQ( Sign( 5 ), 1 );
+    EXPECT_EQ( Sign( -5 ), -1 );
+    EXPECT_EQ( Sign( 0 ), 0 );
+}
+
+//------------------------------------------------------------------------------------------
+// DelphisRound: ToSize_t/ToInt/Round/Ceil/Trunc и size_t-варианты.
+// Функции собраны парами "NDEBUG-макрос / debug-шаблон" — различаются только
+// assert'ами, поэтому проверяются лишь семантики, одинаковые в обоих режимах.
+//------------------------------------------------------------------------------------------
+TEST( TestUtils, ToSize_tNegativeAndTrunc ) {
+    EXPECT_EQ( ToSize_t( -5.0 ), 0U );
+    EXPECT_EQ( ToSize_t( -0.9 ), 0U );
+    EXPECT_EQ( ToSize_t( 0.0 ), 0U );
+    EXPECT_EQ( ToSize_t( 3.7 ), 3U ); // усечение, не округление
+}
+
+//------------------------------------------------------------------------------------------
+TEST( TestUtils, ToIntTruncTowardZero ) {
+    EXPECT_EQ( ToInt( 5.7 ), 5 );
+    EXPECT_EQ( ToInt( -5.7 ), -5 ); // static_cast<int> усекает к нулю
+    EXPECT_EQ( ToInt( 5 ), 5 );
+}
+
+//------------------------------------------------------------------------------------------
+TEST( TestUtils, RoundAwayFromZero ) {
+    // std::round округляет "от нуля" (0.5 -> 1, -0.5 -> -1), в отличие от
+    // банковского округления Delphi — факт зафиксирован намеренно.
+    EXPECT_EQ( Round( 2.5 ), 3 );
+    EXPECT_EQ( Round( -2.5 ), -3 );
+    EXPECT_EQ( Round( 0.5 ), 1 );
+    EXPECT_EQ( Round( -0.5 ), -1 );
+}
+
+//------------------------------------------------------------------------------------------
+TEST( TestUtils, RoundToSize_tBounds ) {
+    EXPECT_EQ( RoundToSize_t( 0.5 ), 1U );
+    EXPECT_EQ( RoundToSize_t( -0.5 ), 0U ); // отрицательное -> 0
+    EXPECT_EQ( RoundToSize_t( 2.5 ), 3U );
+    EXPECT_EQ( RoundToSize_t( 0.0 ), 0U );
+}
+
+//------------------------------------------------------------------------------------------
+TEST( TestUtils, CeilTruncToSize_tNegativeIsZero ) {
+    EXPECT_EQ( CeilToSize_t( 0.5 ), 1U );
+    EXPECT_EQ( CeilToSize_t( 2.1 ), 3U );
+    EXPECT_EQ( CeilToSize_t( -1.9 ), 0U );
+
+    EXPECT_EQ( TruncToSize_t( 2.7 ), 2U );
+    EXPECT_EQ( TruncToSize_t( 0.9 ), 0U );
+    EXPECT_EQ( TruncToSize_t( -2.7 ), 0U );
 }
 
 //------------------------------------------------------------------------------------------
