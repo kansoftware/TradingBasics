@@ -23,6 +23,9 @@ TForecastResult Forecast(
     const double aConfidenceIntervals ) {
     
     const size_t NDat = aData.size();
+    if (NDat < 2) { // деление на (NDat-1) ниже: серия короче 2 точек — bad-значения
+        return TForecastResult{ GetBadPrice(), GetBadPrice(), GetBadPrice()};
+    }
 
     CIndicatorES Es;
     if (not Es.CalcPar(aData, aioParams)) {
@@ -45,7 +48,6 @@ TForecastResult Forecast(
         s = s + a2 + a1;
         t = a2 + gam*a1;
         f = (s + phi * t);
-        //        Hist[start + i] = f;
     }
     var /= ToDouble(NDat - 1);
     double a1 = 1.0;
@@ -61,8 +63,6 @@ TForecastResult Forecast(
     const double Conf1 = Fore + ci;
     const double Conf2 = Fore - ci;
 
-    //    a = alp * (1 + a2 * gam);
-    //    a3 += a*a;
     TForecastResult lResult;
     lResult.upper = Conf1;
     lResult.forecast = Fore;

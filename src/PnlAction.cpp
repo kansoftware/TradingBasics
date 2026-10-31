@@ -17,6 +17,7 @@
 #include <cmath>
 #include <algorithm>
 #include <cassert>
+#include <iterator>
 #include <numeric>
 #include <climits>
 #include <stdlib.h>     /* srand, rand */
@@ -131,7 +132,6 @@ TPriceSeries ReductionOfTheIncome(
     for( size_t i = 0; i < aPnL.size(); ++i ) {
 
         TPrice lValue = aPnL[ i ].Price ;
-        //lProfits.insert( std::pair< TPrice, size_t >( lValue, i ) ) ;
         lProfits.emplace( lValue, i ) ;
     }
 
@@ -265,10 +265,10 @@ TPrice PnLsToMoneyMonteCarlo( const TPriceSeries & aPnl, const bool aUseVolume, 
 //------------------------------------------------------------------------------------------
 TPrice PnLsToMoneyMonteCarloQuantile( const TPriceSeries & aPnl, const bool aUseVolume, const size_t N, const size_t aSamples, const double aQuantile ) {
     const size_t lSize = aPnl.size();
-    if( lSize < 2 or N < 2 or IsGreat( aQuantile, 1.0 ) ) {
+    if( lSize < 2 or N < 2 or IsGreat( aQuantile, 1.0 ) or aSamples == 0 ) {
         return 0.0;
     }
-    
+
     std::multiset<TPrice> lData;
     
     for( size_t i=0; i<aSamples; ++i ){
@@ -283,7 +283,7 @@ TPrice PnLsToMoneyMonteCarloQuantile( const TPriceSeries & aPnl, const bool aUse
         lData.insert( lPnlTest );
     }
     
-    const size_t lID = RoundToSize_t( aQuantile * ToDouble( aSamples ) );
+    const size_t lID = std::min( RoundToSize_t( aQuantile * ToDouble( aSamples ) ), aSamples - 1 );
     
     auto iter = lData.cbegin();
     std::advance(iter, lID);
@@ -320,9 +320,7 @@ TPrice DealsToPNLCoefficientQuick(
     
     const TPrice lPnlMoney = PnLsToMoneyResult( lPnL );
     const TPrice lResult =  lPnlMoneyReduction / ( lMaxDD + std::abs( lPnlMoney ) );
-//    TPrice lResult =  lPnlMoney / ( lMaxDD + std::abs( lPnlMoney ) );
-//    TPrice lResult =  lPnlMoney / ( lMaxDD + 1 );
-    
+
     return lResult ;
 }
 
@@ -342,7 +340,6 @@ TPrice DealsToPNLCoefficient(
     //region перевести список сделок в список d_pnl
     TPrice lResult = gMaxBedAttraction ;
     TPrice lPnLValue = 0.0;
-    //TInnerDate lPnLTime = 0.0;
     std::list< TSimpleTick > lPnLs;
     lPnLs.push_back( {aFirstPoint, 0.0, 0} );
 
@@ -362,7 +359,6 @@ TPrice DealsToPNLCoefficient(
         lPnLs.push_back( lRealTick );
 
         lPnLValue += lDealPnl;
-        //lPnLTime += ( lDeal.CloseTime - lDeal.OpenTime );
     }
 
     lPnLs.push_back( {aLastPoint, 0.0, 0} );
@@ -464,13 +460,21 @@ TPrice DealsToCoeff(
     #endif
     
     if( aDeals.size() <= aMinDeals ) {
-        aoPnl = GetBadPrice(); 
+        aoPnl = GetBadPrice();
         aoMaxDD = GetBadPrice();
-        aoMaxPos = 0; 
+        aoMaxPos = 0;
         aoMeadPos = 0;
         return gMaxBedAttraction;
     }
-    
+
+    if( aBars.empty() ) { // без баров баланс пуст — rbegin()/медиана не определены
+        aoPnl = GetBadPrice();
+        aoMaxDD = GetBadPrice();
+        aoMaxPos = 0;
+        aoMeadPos = 0;
+        return gMaxBedAttraction;
+    }
+
     TPriceSeries lBalance( aBars.size() );
     
     for( size_t i=0; i<aBars.size(); ++i ){
@@ -499,14 +503,20 @@ TPrice DealsToCoeff(
             lTickCompare 
         );
         assert( itBegin != lBalance.end() );
-        
-        auto itEnd = std::upper_bound( 
+        if( itBegin == lBalance.end() ) { // сделка позже последнего бара: в release assert исчезает — пропуск
+            continue;
+        }
+
+        auto itEnd = std::upper_bound(
             itBegin, 
             lBalance.end(),
             TSimpleTick{ lCloseTime,0.0,0.0 },
-            lTickCompare 
+            lTickCompare
         );
-        
+        if( itEnd == itBegin ) { // закрытие не позже открытия: минимум один бар, иначе prev(itEnd) до itBegin
+            itEnd = std::next( itBegin );
+        }
+
         TPrice lBalanceVolume = 0.0;
             
         if( it->DealSide == TDealSide::Buy ) {
