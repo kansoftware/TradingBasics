@@ -22,7 +22,7 @@ std::string IntToCode( const long aValue ) {
     std::string lresult;
 
     while( lDiv > 0 ) {
-        const size_t lSymbolCode = ToSize_t( ToInt( lDiv ) % ToInt( gSymbols_count ) );
+        const size_t lSymbolCode = ToSize_t( lDiv % static_cast< long >( gSymbols_count ) );
         lresult = gSymbols[ lSymbolCode ] + lresult;
         lDiv /= static_cast< long >( gSymbols_count );
     }

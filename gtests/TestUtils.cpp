@@ -267,19 +267,44 @@ TEST( TestUtils, IntToCodeBoundaries ) {
 }
 
 //------------------------------------------------------------------------------------------
-TEST( TestUtils, IntToCodeLargeNumber ) {
-    // Обратного преобразования нет (CodeToInt отсутствует) — проверяем лишь,
-    // что результат непустой и целиком состоит из символов алфавита без uppercase.
-    // Внимание: внутри IntToCode используется ToInt(lDiv), поэтому значения
-    // больше INT_MAX в debug-сборке упираются в assert (в release — UB макроса
-    // ToInt); тестируем большое число в пределах int.
-    const std::string lCode = IntToCode( 1234567890L );
-    EXPECT_FALSE( lCode.empty() );
+namespace {
 
-    for( const char lSymbol : lCode ) {
-        EXPECT_TRUE( ( lSymbol >= '0' and lSymbol <= '9' ) or ( lSymbol >= 'a' and lSymbol <= 'z' ) )
-            << "symbol " << lSymbol;
+/// Обратная сборка значения из кода: позиционное base-36 по gSymbols
+/// (инверсия GetSymbolByIdx). Обратного CodeToInt в модуле нет.
+long CodeToIntInverse( const std::string & aCode ) {
+    long lValue = 0;
+    for( const char lSymbol : aCode ) {
+        size_t lIdx = 0;
+        while( lIdx < GetSymbolsCount() and GetSymbolByIdx( lIdx ) != lSymbol ) { ++lIdx; }
+        EXPECT_LT( lIdx, GetSymbolsCount() ) << "symbol out of alphabet: " << lSymbol;
+        lValue = lValue * static_cast< long >( GetSymbolsCount() ) + static_cast< long >( lIdx );
     }
+    return lValue;
+}
+
+} // namespace
+
+TEST( TestUtils, IntToCodeLargeNumber ) {
+    // Обратного преобразования нет (CodeToInt отсутствует) — проверяем
+    // реконструкцией значения из строки (позиционное base-36 по алфавиту).
+    // Диапазон после отказа от ToInt в цикле — весь long (> INT_MAX допустим).
+    const long lValues[] = { 1234567890L, 2147483648L, 1125899906842624L };
+
+    for( const long lValue : lValues ) {
+        const std::string lCode = IntToCode( lValue );
+        EXPECT_FALSE( lCode.empty() );
+
+        for( const char lSymbol : lCode ) {
+            EXPECT_TRUE( ( lSymbol >= '0' and lSymbol <= '9' ) or ( lSymbol >= 'a' and lSymbol <= 'z' ) )
+                << "symbol " << lSymbol;
+        }
+
+        EXPECT_EQ( CodeToIntInverse( lCode ), lValue ) << "value " << lValue;
+    }
+
+    // Конвенция <= 0 -> "0" сохраняется
+    EXPECT_EQ( CodeToIntInverse( IntToCode( 0 ) ), 0L );
+    EXPECT_EQ( IntToCode( -5 ), "0" );
 }
 
 //------------------------------------------------------------------------------------------
