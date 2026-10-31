@@ -13,19 +13,31 @@
 
 /**
  *  \fn IntToCode
- *  \brief преобразование числа в сжатую gSymbols строку
+ *  \brief Преобразование числа в сжатую строку по алфавиту gSymbols (base-36).
+ *
+ *  Алфавит — [0-9a-z_] из 36 символов (uppercase-буквы удалены после проблем
+ *  на binance); обратное преобразование (CodeToInt) не существует. Числа <= 0
+ *  вырождаются в строку "0". Внимание: внутри используется ToInt(lDiv), поэтому
+ *  значения больше INT_MAX недопустимы — в debug-сборке assert, в release UB
+ *  (см. DelphisRound.h). Результат используется как компонент orderLinkId Bybit
+ *  (ограничение длины идентификатора — 36 символов).
+ *  \param aValue Преобразуемое число (0 < aValue <= INT_MAX).
+ *  \return Строка из символов алфавита, старший разряд первым; "0" для aValue <= 0.
  */
 std::string IntToCode( const long aValue );
 
 /**
  *  \fn GetSymbolByIdx
- *  \brief Получить символ по его коду
+ *  \brief Получить символ по его индексу в алфавите.
+ *  \param aIdx Индекс в диапазоне [0; GetSymbolsCount()).
+ *  \return Символ алфавита; вне диапазона — служебный '_'.
  */
 char GetSymbolByIdx( const size_t aIdx );
 
 /**
  *  \fn GetSymbolsCount
- *  \brief Получить число символов в наборе
+ *  \brief Получить число символов в наборе.
+ *  \return Размер алфавита (36).
  */
 size_t GetSymbolsCount();
 

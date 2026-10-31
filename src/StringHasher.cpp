@@ -3,9 +3,10 @@
 
 /**
  *  \var gSymbols
- *  \brief Символы в строке для создания уникальных идентификаторов
+ *  \brief Алфавит [0-9a-z] для создания уникальных идентификаторов (36 символов,
+ *  без uppercase — пришлось удалить после проблемы на binance).
  */
-const std::string gSymbols( "0123456789qwertyuiopasdfghjklzxcvbnm" ); /// QWERTYUIOPASDFGHJKLZXCVBNM (пришлось удалить после проблемы на binance)
+const std::string gSymbols( "0123456789qwertyuiopasdfghjklzxcvbnm" );
 
 /**
  *  \var gSymbols_count
