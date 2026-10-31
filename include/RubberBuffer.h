@@ -33,7 +33,8 @@ template <class T, class Tin=T> class TRubberBuffer {
         /**
          *  \brief Конструктор
          *  \param aMinSize Число значений, после которого буфер считается заполненным
-         *  \note При aMinSize == 0 сработает assert
+         *  \note При aMinSize == 0 сработает assert; в Release (NDEBUG) assert
+         *  исчезает и isFill() всегда true — ноль заполняйте значением >= 1
          */
         explicit TRubberBuffer( const size_t aMinSize ):
             fMinSize(aMinSize),fBuffer() {

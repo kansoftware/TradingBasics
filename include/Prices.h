@@ -39,8 +39,11 @@ constexpr TPrice gSpreadValueLimit = 99999.9 ;
 /**
  *  \brief Проверка цены на валидность.
  *  \param aPrice Проверяемая цена.
- *  \return true, если gMinPrice < aPrice < gMaxPrice — интервал ОТКРЫТЫЙ: сами
- *  границы (как и 0, отрицательные цены и sentinel GetBadPrice()) невалидны.
+ *  \return true, если цена в интервале (gMinPrice, gMaxPrice) с учётом
+ *  эпсилона: сравнения идут через IsLess (B - A > gAbsoluteZero), поэтому
+ *  эффективный интервал ОТКРЫТЫЙ — (gMinPrice + gAbsoluteZero,
+ *  gMaxPrice - gAbsoluteZero). Сами границы (как и 0, отрицательные цены
+ *  и sentinel GetBadPrice()) невалидны.
  */
 constexpr bool IsValidPrice( const TPrice aPrice ) {
     return IsLess( gMinPrice, aPrice ) and IsLess( aPrice, gMaxPrice ) ;
