@@ -7,12 +7,16 @@
  */
 #include <gtest/gtest.h>
 
+#include <cctype>
 #include <memory>
 #include <sstream>
 
 #include "PointerValidater.h"
 #include "Comparers.h"
 #include "DelphisRound.h"
+#include "Prices.h"
+#include "StringHasher.h"
+#include "FileManipulator.h"
 
 //------------------------------------------------------------------------------------------
 namespace {
@@ -45,7 +49,7 @@ TEST( TestUtils, IsValidPointerRaw ) {
     TDerived lDerived;
     TBase * lPolymorph = &lDerived;
     EXPECT_TRUE( isValidPointer( lPolymorph ) );
-    EXPECT_TRUE( isValidPointer( static_cast< TBase * >( nullptr ) ) == false );
+    EXPECT_FALSE( isValidPointer( static_cast< TBase * >( nullptr ) ) );
 }
 
 //------------------------------------------------------------------------------------------
@@ -207,6 +211,106 @@ TEST( TestUtils, CeilTruncToSize_tNegativeIsZero ) {
     EXPECT_EQ( TruncToSize_t( 2.7 ), 2U );
     EXPECT_EQ( TruncToSize_t( 0.9 ), 0U );
     EXPECT_EQ( TruncToSize_t( -2.7 ), 0U );
+}
+
+//------------------------------------------------------------------------------------------
+// Prices: границы валидности — открытый интервал (gMinPrice, gMaxPrice)
+//------------------------------------------------------------------------------------------
+TEST( TestUtils, PricesBounds ) {
+    // сами границы невалидны (интервал открытый)
+    EXPECT_FALSE( IsValidPrice( gMinPrice ) );
+    EXPECT_FALSE( IsValidPrice( gMaxPrice ) );
+    EXPECT_TRUE( IsValidPrice( 1.0 ) );
+
+    // sentinel: bad-цена отрицательна и невалидна
+    EXPECT_EQ( GetBadPrice(), -gMaxPrice );
+    EXPECT_FALSE( IsValidPrice( GetBadPrice() ) );
+}
+
+//------------------------------------------------------------------------------------------
+TEST( TestUtils, PricesSpreadBounds ) {
+    // спред: открытый интервал (-gSpreadValueLimit, gSpreadValueLimit)
+    EXPECT_TRUE( isValidSpreadValue( 0.0 ) );
+    EXPECT_TRUE( isValidSpreadValue( gSpreadValueLimit - 1.0 ) );
+    EXPECT_FALSE( isValidSpreadValue( gSpreadValueLimit ) );
+    EXPECT_FALSE( isValidSpreadValue( -gSpreadValueLimit ) );
+}
+
+//------------------------------------------------------------------------------------------
+// StringHasher: алфавит [0-9a-z_] (36 символов, без uppercase — наследие binance)
+//------------------------------------------------------------------------------------------
+TEST( TestUtils, StringHasherAlphabet ) {
+    EXPECT_EQ( GetSymbolsCount(), 36U );
+
+    EXPECT_EQ( GetSymbolByIdx( 0 ), '0' );
+    EXPECT_EQ( GetSymbolByIdx( 9 ), '9' );
+
+    for( size_t i = 0; i < GetSymbolsCount(); ++i ) {
+        const char lSymbol = GetSymbolByIdx( i );
+        EXPECT_TRUE( ( lSymbol >= '0' and lSymbol <= '9' ) or ( lSymbol >= 'a' and lSymbol <= 'z' ) )
+            << "index " << i;
+        EXPECT_FALSE( isupper( lSymbol ) ) << "uppercase at index " << i;
+    }
+
+    // вне диапазона — служебный '_'
+    EXPECT_EQ( GetSymbolByIdx( GetSymbolsCount() ), '_' );
+    EXPECT_EQ( GetSymbolByIdx( 100 ), '_' );
+}
+
+//------------------------------------------------------------------------------------------
+TEST( TestUtils, IntToCodeBoundaries ) {
+    // <=0 вырождается в "0"
+    EXPECT_EQ( IntToCode( 0 ), "0" );
+    EXPECT_EQ( IntToCode( -5 ), "0" );
+
+    // base-36 по алфавиту gSymbols: индекс 35 — последний символ 'm'
+    EXPECT_EQ( IntToCode( 1 ), "1" );
+    EXPECT_EQ( IntToCode( 35 ), "m" );
+    EXPECT_EQ( IntToCode( 36 ), "10" ); // перенос разряда
+}
+
+//------------------------------------------------------------------------------------------
+TEST( TestUtils, IntToCodeLargeNumber ) {
+    // Обратного преобразования нет (CodeToInt отсутствует) — проверяем лишь,
+    // что результат непустой и целиком состоит из символов алфавита без uppercase.
+    const std::string lCode = IntToCode( 1000000000000L );
+    EXPECT_FALSE( lCode.empty() );
+
+    for( const char lSymbol : lCode ) {
+        EXPECT_TRUE( ( lSymbol >= '0' and lSymbol <= '9' ) or ( lSymbol >= 'a' and lSymbol <= 'z' ) )
+            << "symbol " << lSymbol;
+    }
+}
+
+//------------------------------------------------------------------------------------------
+// FileManipulator: сырой бинарный IO через reinterpret_cast (см. доку заголовка)
+//------------------------------------------------------------------------------------------
+namespace {
+
+/// POD-структура для roundtrip-теста (только тривиально копируемые поля)
+struct TPodRecord {
+    int mId;
+    double mValue;
+    char mTag;
+};
+
+} // namespace
+
+TEST( TestUtils, FileManipulatorPodRoundtrip ) {
+    const TPodRecord lSource{ 42, 3.14159, 'x' };
+
+    std::stringstream lStream( std::ios::in | std::ios::out | std::ios::binary );
+    lStream << TWrapFileData< TPodRecord >( lSource );
+    EXPECT_TRUE( lStream.good() );
+
+    TWrapFileData< TPodRecord > lWrap; // нулевая инициализация поля
+    lStream >> lWrap;
+    EXPECT_TRUE( lStream.good() );
+
+    const TPodRecord lRead = lWrap; // неявное преобразование к T const&
+    EXPECT_EQ( lRead.mId, 42 );
+    EXPECT_EQ( lRead.mValue, 3.14159 );
+    EXPECT_EQ( lRead.mTag, 'x' );
 }
 
 //------------------------------------------------------------------------------------------
