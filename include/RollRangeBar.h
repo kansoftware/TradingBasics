@@ -4,7 +4,7 @@
  * \author kan <kansoftware.ru>
  * \since 2020-10-21
  * \date 2026-10-30
- * \note Non thread-safe
+ * \note Класс не потокобезопасен (non thread-safe)
  */
 
 #ifndef ROLLRANGEBAR_H

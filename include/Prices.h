@@ -4,7 +4,7 @@
  * \author kan <kansoftware.ru>
  * \since 2015-08-25
  * \date 2019-09-23
- * Дополнительные функции см. в модуле PricesUtils.h
+ * \note Дополнительные функции см. в модуле PricesUtils.h
  */
 
 #ifndef PRICES_H

@@ -1,8 +1,7 @@
-/*
- * File:   CIndicatorES.h
- * Author: https://www.mql5.com/ru/articles/318
- *
- * Created on January 20, 2017, 4:14 PM
+/**
+ * \file CIndicatorES.h
+ * \author https://www.mql5.com/ru/articles/318
+ * \since 2017-01-20
  */
 
 #ifndef CINDICATORES_H

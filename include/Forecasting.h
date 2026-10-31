@@ -1,8 +1,7 @@
-/*
- * File:   Forecasting.h
- * Author: kan <kansoftware.ru>
- *
- * Created on January 23, 2017, 1:58 PM
+/**
+ * \file Forecasting.h
+ * \author kan <kansoftware.ru>
+ * \since 2017-01-23
  */
 
 #ifndef FORECASTING_H

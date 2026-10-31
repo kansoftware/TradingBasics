@@ -4,7 +4,7 @@
  * \author kan <kansoftware.ru>
  * \since 2015-11-11
  * \date 2021-10-29
- * Модуль используется неизменно в проектах TradeBot и [R] BackTester
+ * \note Модуль используется неизменно в проектах TradeBot и [R] BackTester
  */
 
 

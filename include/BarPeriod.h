@@ -4,7 +4,7 @@
  * \author kan <kansoftware.ru>
  * \since 2016-12-19
  * \date 2021-05-31
- * Модуль используется неизменно в проектах TradeBot и [R] BackTester
+ * \note Модуль используется неизменно в проектах TradeBot и [R] BackTester
  */
 
 #ifndef BARPERIOD_H

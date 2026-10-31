@@ -1,10 +1,9 @@
 /***
- * File:   RollSMA.h
- * Author: kan
- *
- * Created on November 13, 2019, 12:55 PM
+ * \file RollSMA.h
+ * \author kan <kansoftware.ru>
+ * \since 2019-11-13
  * \date 2026-10-30
- * The idea is from https://bitbucket.org/quanttools/quanttools/src/master/inst/include/Indicators/Sma.h
+ * \note The idea is from https://bitbucket.org/quanttools/quanttools/src/master/inst/include/Indicators/Sma.h
  * \note Класс не потокобезопасен (non thread-safe)
  */
 
