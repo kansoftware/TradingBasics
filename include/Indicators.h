@@ -101,7 +101,7 @@ TPriceSeries _SimpleMA( const TPriceSeries & aPrices, const int aPeriod, const s
  *  \param aLag Сдвиг серии вправо на aLag точек
  *  \return Первые aLag точек — bad; точка aPeriod+aLag-1 — seed (среднее
  *          точек [aLag, aPeriod+aLag)); далее
- *          v[i] = price[i]*w + v[i-1]*(1-w). Точки (aLag, aPeriod+aLag-1) — bad.
+ *          v[i] = price[i]*w + v[i-1]*(1-w). Точки [aLag, aPeriod+aLag-1) — bad.
  *          Если длина входа <= aPeriod+aLag — все точки bad.
  *          Бросает std::logic_error при aPeriod <= 0.
  */
@@ -115,7 +115,7 @@ TPriceSeries _ExponentMA( const TPriceSeries & aPrices, const int aPeriod, const
  *  \return Первые aLag точек — bad; точка aPeriod+aLag-1 — seed (среднее
  *          точек [aLag, aPeriod+aLag)); далее
  *          v[i] = (price[i] + v[i-1]*(aPeriod-1))/aPeriod.
- *          Точки (aLag, aPeriod+aLag-1) — bad.
+ *          Точки [aLag, aPeriod+aLag-1) — bad.
  *          Если длина входа <= aPeriod+aLag — все точки bad.
  *          Бросает std::logic_error при aPeriod <= 0.
  */
