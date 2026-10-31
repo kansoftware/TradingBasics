@@ -33,7 +33,7 @@ class TWrapFileData {
 public:
     TWrapFileData() : t() {}
 
-    TWrapFileData(T const & t) : t(t) {} //explicit использовать нельзя, иначе не будет работать copy(...)
+    TWrapFileData(T const & aValue) : t(aValue) {} //explicit использовать нельзя, иначе не будет работать copy(...)
 
     operator T&() {
         return t;
