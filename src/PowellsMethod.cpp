@@ -202,12 +202,17 @@ double PowellsMethod::brent(double ax, double bx, double cx, double &xmin) {
         } else {
             if (u < x)a = u;
             else b = u;
-            if (fu <= fw || w == x) {
+            /* Тождественные проверки точек (как в NR): x, w, v стартуют с одной
+             * абсциссы bx, и здесь спрашивается «эта точка ещё не сдвигалась?»,
+             * а не «близки ли значения» — eps-сравнение меняло бы брекетинг.
+             * fabs(a-b) <= 0.0 эквивалентно a == b на всех IEEE-754 значениях
+             * (NaN -> false, +-0.0 -> true), но без оператора == (-Wfloat-equal). */
+            if (fu <= fw || fabs(w - x) <= 0.0) {
                 v = w;
                 w = u;
                 fv = fw;
                 fw = fu;
-            } else if (fu <= fv || v == x || v == w) {
+            } else if (fu <= fv || fabs(v - x) <= 0.0 || fabs(v - w) <= 0.0) {
                 v = u;
                 fv = fu;
             }
