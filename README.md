@@ -1,48 +1,50 @@
-# Trading basics library
+# TradingBasics library
+
+**Languages:** English | [Русский](README.ru.md)
 
 ## About
 
 These classes, types and functions are suitable for creating trading strategies and bots using C++ compilers.
 
-## Карта модулей
+## Module map
 
-### include/ — заголовки
+### include/ — headers
 
-| Файл | Назначение |
+| File | Purpose |
 |---|---|
-| `BarPeriod.h` | enum `TBarPeriod` — периоды баров; имена и конверсии периодов |
-| `BasisOfStrategy.h` | базовые типы и утилиты стратегий: бары/серии цен, дата-время, `RoundTo`/`TruncTo`/`CeilTo`, `trim` |
-| `CIndicatorES.h` | модель Хольта с демпфированным трендом (экспоненциальное сглаживание) на базе метода Пауэлла |
-| `Comparers.h` | сравнение чисел с плавающей точкой с допуском (epsilon) |
-| `DelphisRound.h` | округления и приведения типов как в Delphi (`ToDouble`/`ToInt`/`ToSize_t` и др.) |
-| `FileManipulator.h` | шаблоны типизированной записи/чтения файлов (сырой бинарный IO) |
-| `Forecasting.h` | прогноз следующего значения ряда моделью Хольта (`TForecastResult`) |
-| `Indicators.h` | технические индикаторы: TrueRange/ADX, MA (SMA/EMA/KAMA), SAR, ZigZag, MACD, Bollinger |
-| `LiveSAR.h` | Parabolic SAR с пошаговым пересчётом на живом ряде |
-| `PnlAction.h` | сделки и PnL-серии: деньги, просадка, статистика, коэффициенты качества |
-| `PointerValidater.h` | проверки указателей (`isValidPointer`), `FreeAndNil` |
-| `PowellsMethod.h` | метод Пауэлла безусловной минимизации функции N переменных |
-| `Prices.h` | базовые определения для работы с ценами |
-| `RollRangeBar.h` | скользящий индикатор Min-Max Range для баров |
-| `RollRange.h` | скользящий индикатор Min-Max Range (`RollRange`, `RollRange_with_tollerance`) |
-| `RollSMA.h` | SMA по окну из n значений, пересчёт за O(1) на Add |
-| `RubberBuffer.h` | «резиновый» (растущий) буфер: min/max/Mean/err(TR) |
-| `StringHasher.h` | перевод чисел в код-строку по алфавиту [0-9a-z] (`IntToCode`) |
-| `VolatilityBarBuffer.h` | min/max/ATR/err(TR) по буферу баров (аналог `VolatilityBuffer.h`) |
-| `VolatilityBuffer.h` | min/max/Mean/err(TR) по заранее заполненному буферу |
+| `BarPeriod.h` | enum `TBarPeriod` — bar periods; period names and conversions |
+| `BasisOfStrategy.h` | basic strategy types and utilities: bars/price series, date-time, `RoundTo`/`TruncTo`/`CeilTo`, `trim` |
+| `CIndicatorES.h` | Holt's model with damped trend (exponential smoothing) based on Powell's method |
+| `Comparers.h` | floating-point comparison with tolerance (epsilon) |
+| `DelphisRound.h` | rounding and type casts as in Delphi (`ToDouble`/`ToInt`/`ToSize_t` and others) |
+| `FileManipulator.h` | templates for typed file writing/reading (raw binary IO) |
+| `Forecasting.h` | next-value forecast of a series with the Holt model (`TForecastResult`) |
+| `Indicators.h` | technical indicators: TrueRange/ADX, MA (SMA/EMA/KAMA), SAR, ZigZag, MACD, Bollinger |
+| `LiveSAR.h` | Parabolic SAR with step-by-step recalculation on a live series |
+| `PnlAction.h` | trades and PnL series: money, drawdown, statistics, quality ratios |
+| `PointerValidater.h` | pointer checks (`isValidPointer`), `FreeAndNil` |
+| `PowellsMethod.h` | Powell's method of unconstrained minimization of a function of N variables |
+| `Prices.h` | basic definitions for working with prices |
+| `RollRangeBar.h` | rolling Min-Max Range indicator for bars |
+| `RollRange.h` | rolling Min-Max Range indicator (`RollRange`, `RollRange_with_tollerance`) |
+| `RollSMA.h` | SMA over a window of n values, O(1) recalculation per Add |
+| `RubberBuffer.h` | "rubber" (growing) buffer: min/max/Mean/err(TR) |
+| `StringHasher.h` | converting numbers into a code string over the [0-9a-z] alphabet (`IntToCode`) |
+| `VolatilityBarBuffer.h` | min/max/ATR/err(TR) over a buffer of bars (analog of `VolatilityBuffer.h`) |
+| `VolatilityBuffer.h` | min/max/Mean/err(TR) over a pre-filled buffer |
 
-### src/ — реализации
+### src/ — implementations
 
-| Файл | Назначение |
+| File | Purpose |
 |---|---|
-| `BarPeriod.cpp` | реализация `BarPeriod.h`: имена периодов (`getBarPeriodName`) |
-| `BasisOfStrategy.cpp` | реализация `BasisOfStrategy.h`: `trim`, бары/серии, дата-время, округление цены к шагу |
-| `CIndicatorES.cpp` | реализация `CIndicatorES.h`: подбор параметров и расчёт модели Хольта |
-| `Forecasting.cpp` | реализация `Forecasting.h`: функция `Forecast` |
-| `Indicators.cpp` | реализация `Indicators.h`: перечисленные индикаторы |
-| `PnlAction.cpp` | реализация `PnlAction.h`: `DealsToPnLs`, `CalcDrawDown`, `PnLsToMoneyResult` |
-| `PowellsMethod.cpp` | реализация метода Пауэлла |
-| `StringHasher.cpp` | реализация `StringHasher.h`: `IntToCode`, алфавит [0-9a-z] |
+| `BarPeriod.cpp` | implementation of `BarPeriod.h`: period names (`getBarPeriodName`) |
+| `BasisOfStrategy.cpp` | implementation of `BasisOfStrategy.h`: `trim`, bars/series, date-time, rounding a price to the step |
+| `CIndicatorES.cpp` | implementation of `CIndicatorES.h`: parameter fitting and calculation of the Holt model |
+| `Forecasting.cpp` | implementation of `Forecasting.h`: the `Forecast` function |
+| `Indicators.cpp` | implementation of `Indicators.h`: the indicators listed above |
+| `PnlAction.cpp` | implementation of `PnlAction.h`: `DealsToPnLs`, `CalcDrawDown`, `PnLsToMoneyResult` |
+| `PowellsMethod.cpp` | implementation of Powell's method |
+| `StringHasher.cpp` | implementation of `StringHasher.h`: `IntToCode`, the [0-9a-z] alphabet |
 
 ## Depends
 
@@ -84,7 +86,7 @@ Include TradingBasics folders in your project. And build your project with the l
 
 Install package:
 ```bash
-sudo apt install ./TradingBasics-0.0.4-Linux.deb
+sudo apt install ./TradingBasics-1.0.0-Linux.deb
 ```
 
 Add the following lines to cmake:

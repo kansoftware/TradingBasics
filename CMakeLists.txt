@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(TradingBasics VERSION 0.0.4)
+project(TradingBasics VERSION 1.0.0)
 
 option(BUILD_TESTING "BUILD_TESTING" OFF)
 option(USER_PEDANT "Show me lots of warrnings" OFF)
